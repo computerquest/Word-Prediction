@@ -10,7 +10,7 @@ MasterResource::MasterResource() {
 	cout << "new mr" << endl;
 }
 
-///////////////////////////////////////////////////////////////////////////file
+///////////////////////////////////////////////////////////////////////////FILE
 vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> delimeter) {
 	ifstream stream;
 	stream.open(fileName);
@@ -76,6 +76,8 @@ vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> d
 
 	return answer;
 }
+
+//////////////////////////////////////////structure
 void MasterResource::saveStruct() {
 	ofstream stream;
 	stream.open("sNGram.txt", ios::trunc);
@@ -178,6 +180,7 @@ void MasterResource::readStruct() {
 	}
 }
 
+/////////////////////////////////////////ngram
 void MasterResource::saveNGram() {
 	ofstream stream;
 	stream.open("NGrams.txt", ios::trunc);
@@ -229,6 +232,8 @@ void MasterResource::readNGram() {
 		ngram->content = currentContent;
 	}
 }
+
+/////////////////////////////////////////probation
 void MasterResource::writeProbationWord() {
 	ofstream stream;
 	stream.open("probationWord.txt", ios::trunc);
@@ -287,7 +292,7 @@ void MasterResource::readProbationSS() {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////find
+////////////////////////////////////////////////////////////////////////////////FIND
 vector<POS> MasterResource::findAllWordType(string input) {
 	vector<string> wordS = breakDownV(input);
 	vector<POS> answer;
@@ -320,14 +325,7 @@ Word MasterResource::findWord(string word) {
 	}
 }
 
-Word MasterResource::findProbationWord(string word) {
-	for (int i = 0; i < probationWord.size(); i++) {
-		if (probationWord.getValueI(i).name == word) {
-			return probationWord.getValueI(i);
-		}
-	}
-}
-
+////////////////////////////////////////////////structure
 vector<SStructure> MasterResource::matchPossibleSS(vector<POS> input) {
 	vector<SStructure> match;
 	for (int i = 0; i < sNGramML.size(); i++) {
@@ -352,23 +350,6 @@ vector<SStructure> MasterResource::matchPossibleSS(vector<POS> input) {
 	}
 
 	return match;
-}
-SStructure MasterResource::findStructure(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
-		bool solution = true;
-		if (current.size() >= order.size()) {
-			for (int a = 0; a < order.size(); a++) {
-				if (current.at(a) != order.at(a) && order.at(a) != Unknown) {
-					solution = false;
-					break;
-				}
-			}
-			if (solution == true) {
-				return sNGramML.at(i).subject;
-			}
-		}
-	}
 }
 SStructure MasterResource::findStructurePercision(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
@@ -436,6 +417,7 @@ SStructure MasterResource::findPartailStructure(vector<POS> order) {
 	return defaultStruct;
 }
 
+/////////////////////////////////////ngram
 NGram<SStructure>* MasterResource::findNGramSS(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
 		vector<POS> current = sNGramML.at(i).subject.component;
@@ -465,6 +447,7 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 	}
 }
 
+////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
 	for (int i = 0; i < ngramML.size(); i++) {
 		if (ngramML.at(i).subject == word) {
@@ -479,8 +462,33 @@ NGram<Word>* MasterResource::findNGramP(Word word) {
 		}
 	}
 }
+Word MasterResource::findProbationWord(string word) {
+	for (int i = 0; i < probationWord.size(); i++) {
+		if (probationWord.getValueI(i).name == word) {
+			return probationWord.getValueI(i);
+		}
+	}
+}
 
-////////////////////////////////////////////////////////////////exist
+////////////////////////////////////////////////////////////////EXIST
+bool MasterResource::wordExist(string word) {
+	for (int i = 0; i < ngramML.size(); i++) {
+		if (ngramML.at(i).subject.name == word) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool MasterResource::ngramExist(Word word) {
+	for (int i = 0; i < ngramML.size(); i++) {
+		if (ngramML.at(i).subject == word) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool MasterResource::sstructureExist(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
 		if (sNGramML.at(i).subject.component == order) {
@@ -489,8 +497,9 @@ bool MasterResource::sstructureExist(vector<POS> order) {
 	}
 
 	return false;
-}
+} 
 
+////////////////////////////////////probation
 bool MasterResource::probationExistWord(string word) {
 	for (int i = 0; i < probationWord.size(); i++) {
 		if (probationWord.getValueI(i).name == word) {
@@ -510,25 +519,7 @@ bool MasterResource::probationExistSS(vector<POS> input) {
 	return false;
 }
 
-bool MasterResource::wordExist(string word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject.name == word) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool MasterResource::ngramExist(Word word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject == word) {
-			return true;
-		}
-	}
-	return false;
-}
-
-////////////////////////////////////////////////////////////////////////misc
+////////////////////////////////////////////////////////////////////////MISC
 void MasterResource::findNew(string phrase) {
 	vector<string> words = breakDownV(phrase);
 	vector<POS> newFoundPOS = engine->multipleMissing(phrase);
@@ -546,6 +537,7 @@ void MasterResource::findNew(string phrase) {
 					NGram<Word> newNGram;
 					newNGram.subject = newWord;
 
+					ngramML.push_back(newNGram);
 					probationWord.deleteIndex(probationWord.getPostionV(newWord));
 				}
 			}
@@ -562,6 +554,7 @@ void MasterResource::updateNGram(Word input, int newOccerence) {
 	ngram->updateItem(input, newOccerence);
 }
 
+//////////////////////////////////////////////////////////////////////////DOUBLE
 bool MasterResource::isDouble(string word) {
 	bool count = false;
 	for (int i = 0; i < ngramML.size(); i++) {

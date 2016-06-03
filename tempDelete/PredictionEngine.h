@@ -30,20 +30,15 @@ public:
 	void readTraining();
 
 	LinkedList<vector<double>, vector<double>> createTrain(vector<Neuron> neurons, vector<vector<double>> desired);
-	//POS findDouble(string phrase, int doubleWord);
+
 	void save();
 	void read();
 
 	void findType();
-	//POS findTypeDeployment(string phrase);
-	//POS findTypeDeployment(string phrase, int unknownWord);
-	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
 
-	//POS chooseDouble(string phrase, string target);
+	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
 
 	void filterExamples();
 
 	void generateData(int amount);
-
-	//void predictSetupTrain();
 }; //class end 

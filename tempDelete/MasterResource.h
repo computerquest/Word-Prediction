@@ -44,7 +44,6 @@ public:
 	Word findProbationWord(string word);
 
 	vector<SStructure> matchPossibleSS(vector<POS> input);
-	SStructure findStructure(vector<POS> order);
 	SStructure findStructurePercision(vector<POS> order);
 	SStructure findPartailStructure(vector<POS> order, int missing);
 
