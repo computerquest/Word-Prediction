@@ -20,6 +20,10 @@ void NeuralNetwork::reset() {
 
 void NeuralNetwork::process() {
 	for (int i = 0; i < neuralNetwork.size(); i++) {
+		neuralNetwork.at(0).at(i).setValue(currentInput.at(i));
+	}
+
+	for (int i = 0; i < neuralNetwork.size(); i++) {
 		if (i == 0) {
 			continue;
 		}
@@ -33,9 +37,7 @@ void NeuralNetwork::process() {
 			for (int a = 0; a < neuron.size(); a++) {
 				Neuron *currentNeuron = neuron.at(a);
 				vector<Connection*> connecting = getConnections((*currentNeuron));
-				//currentNeuron->setValue(calcSigmoid(calcNetInput(*currentNeuron)));
-				double netInput = calcNetInput(*currentNeuron);
-				currentNeuron->setValue(calcTanh(netInput));
+				currentNeuron->setValue(calcTanh(calcNetInput(*currentNeuron)));
 			}
 		}
 	}
@@ -95,6 +97,100 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 	//this sets the beginning values
 	for (int i = 0; i < (nodes.at(0)).size(); i++) {
 		nodes.at(0).at(i)->value = inputs.at(i);
+	}
+
+	process();
+
+	for (int i = 0; i < (nodes.at(nodes.size() - 1)).size(); i++) {
+		Neuron *outputNeuron = (nodes.at(nodes.size() - 1)).at(i);
+		double target = desired.at(i);
+		double output = outputNeuron->value;
+		double difference = -1 * (target - output);
+		//double derivitive = output * (1 - output);
+		double derivitive = tanhDerivative(output);
+
+		//connecting directly to output
+		{
+			vector<Connection*> connection = getConnections((*outputNeuron));
+			for (int a = 1; a < connection.size(); a++) {
+				Connection *currentConnection = connection.at(a);
+				double weight = currentConnection->weight;
+				double input = (findNeuron(currentConnection->sendId))->value;
+				double change = derivitive * input * difference;
+				currentConnection->setWeight(weight - (.5*change));
+			}
+		}
+	}
+
+	//hidden
+	/*
+	3
+	3-2 = 1
+	4 - 2 = 2
+	2> 1
+	num = 3;
+	4-3 = 1
+	all ways has to be -1 to make it 0 based
+	*/
+
+	/*
+	for(int d= 2; neuralNetwork.size()-d > 0; d++) {
+	vector<Neuron*> currentStuff = neuralNetwork.getValue(neuralNetwork.size - d);
+
+	for (int b = 0; b < currentStuff.size(); b++) {
+	*/
+
+	for (int z = 2; nodes.size() - z > 0; z++) {
+		vector<Neuron*> currentStuff = nodes.at(nodes.size() - z);
+
+		for (int b = 0; b < currentStuff.size(); b++) { //hidden node
+			Neuron* currentHidden = currentStuff.at(b);
+			vector<Connection*> connection = getConnections((*currentHidden));
+			double output = currentHidden->value;
+			//double derivitive = output * (1 - output);
+			double derivitive = tanhDerivative(output);
+
+			for (int c = 0; c < connection.size(); c++) { //input to node
+				Connection* currentConnection = connection.at(c);
+				double weight = currentConnection->weight;
+				double solution = 0;
+				double input = (findNeuron(currentConnection->sendId))->value;
+
+				{
+					for (int i = 0; i < (nodes.at(nodes.size() - 1)).size(); i++) {
+						Neuron* neuron = (nodes.at(nodes.size() - 1)).at(i);
+						double tempTarget = desired.at(i);
+						double tempOutput = neuron->value;
+						//solution += (-1 * (tempTarget - tempOutput)) * (tempOutput * (1 - tempOutput)) * weight;
+						solution += (-1 * (tempTarget - tempOutput)) * (tanhDerivative(tempOutput)) * weight;
+					}
+				}
+
+				double change = derivitive * solution * input;
+
+				currentConnection->setWeight(weight - .5 * change);
+			}
+		}
+	}
+	process();
+}
+void NeuralNetwork::fix(vector<double> desired) {
+	//loop for each output node
+	vector<vector<Neuron*>> nodes;
+
+	for (int i = 0; i < this->neuralNetwork.size(); i++) {
+		vector<Neuron*> tempNeurons;
+
+		//this might be redundant it makes pointers from neuralNetwork and puts them in tempNeurons
+		for (int a = 0; a < this->neuralNetwork.at(i).size(); a++) {
+			tempNeurons.push_back(&neuralNetwork.at(i).at(a));
+		}
+		nodes.push_back(tempNeurons);
+	}
+
+	//this sets the beginning values
+	for (int i = 0; i < (nodes.at(0)).size(); i++) {
+		nodes.at(0).at(i)->value = currentInput.at(i);
 	}
 
 	process();

@@ -12,6 +12,7 @@ class NeuralNetwork {
 public:
 	vector<vector<Neuron>> neuralNetwork;
 	vector <Connection*> connections;
+	vector<double> currentInput;
 
 	Neuron * findNeuron(double id);
 
@@ -23,6 +24,8 @@ public:
 	vector<Connection*> getConnections(Neuron neuron);
 
 	void fix(vector<double> inputs, vector<double> desired);
+
+	void fix(vector<double> desired);
 
 	double calcNetInput(Neuron input);
 
