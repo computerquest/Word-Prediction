@@ -120,7 +120,7 @@ void PredictionEngine::findType() {
 					+ neurons.at(4).value + neurons.at(6).value + neurons.at(29).value + neurons.at(13).value + neurons.at(12).value + neurons.at(14).value
 					+ neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
 
-				double total = nounV + verbV + adjectiveV;
+				double total = nounV + verbV + adjectiveV > 0 ? nounV + verbV + adjectiveV : -1;
 
 				if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
 					desired.push_back(1);
