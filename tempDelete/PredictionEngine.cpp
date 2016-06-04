@@ -87,10 +87,12 @@ void PredictionEngine::findType() {
 
 		for (int i = 0; i < examples.size(); i++) {
 			vector<string> wordStrings = breakDownV(examples.at(i));
-			bool badOne = false;
 
 			for (int a = 0; a < wordStrings.size(); a++) {
-				for (int secondMissing = 0; secondMissing < wordStrings.size(); secondMissing++) {
+				bool badOne = false;
+				
+				//did the wierd condition because if it set it to negative one normally it returns false
+				for (int secondMissing = -1; secondMissing+1 < wordStrings.size()+1; secondMissing++) {
 					if (secondMissing == a) {
 						continue;
 					}
@@ -118,16 +120,17 @@ void PredictionEngine::findType() {
 					bool aUsed = false;
 
 					for (int findI = 0; findI < 2; findI++) {
-						total++;
 						POS newType;
-						if (aUsed == false && a < secondMissing) {
+						if (secondMissing == -1 & aUsed == false | aUsed == false & a < secondMissing) {
 							newType = findTypeDeployment(wtype, examples.at(i), a);
 							aUsed = true;
 							wtype.at(a) = newType;
+							total++;
 						}
-						else if (aUsed == true || secondMissing < a) {
+						else if (secondMissing > -1 && aUsed == true | secondMissing < a) {
 							newType = findTypeDeployment(wtype, examples.at(i), secondMissing);
 							wtype.at(secondMissing) = newType;
+							total++;
 						}
 
 						vector<Neuron> neurons = nn.neuralNetwork.at(0);
@@ -172,8 +175,10 @@ void PredictionEngine::findType() {
 		
 		std::cout << endl;
 		std::cout << "Generation: " << generation << " Error: " << error << " Change: " << error - lastError;
-		std::cout << " Average: " << (error / 3 / total) << endl;
 
+		if (total > 0) {
+			std::cout << " Average: " << (error / 3 / total) << endl;
+		}
 		if (error - lastError > -.00001) {
 			if (strike > 0) {
 				strike--;
@@ -192,7 +197,9 @@ void PredictionEngine::findType() {
 		lastError = error;
 	}
 
-	std::cout << "Smallest: " << smallest << " Average: " <<  (smallest/3/total) << " Total: " << total << endl;
+	if (total > 0) {
+		std::cout << "Smallest: " << smallest << " Average: " << (smallest / 3 / total) << " Total: " << total << endl;
+	}
 } //can call find type deployment from method and add loop
 
 POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int i) {
