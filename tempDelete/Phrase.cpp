@@ -15,7 +15,7 @@ Phrase::Phrase(string phraseInput) {
 		wordPOS.push_back(wordsW.at(wordsW.size() - 1).type);
 	}
 
-	structure = resource->findStructure(wordPOS);
+	structure = resource->findStructurePercision(wordPOS);
 }
 
 bool Phrase::contains(Word word) {

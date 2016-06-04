@@ -13,6 +13,7 @@ public:
 	vector<vector<Neuron>> neuralNetwork;
 	vector <Connection*> connections;
 	vector<double> currentInput;
+	double networkError = 0;
 
 	Neuron * findNeuron(double id);
 
@@ -34,6 +35,7 @@ public:
 	void addAllConnections();
 	LinkedList<vector<double>, vector<double>> limit(LinkedList<vector<double>, vector<double>> input, int amount);
 	double calcDifference(vector<double> one, vector<double> two);
+	double calcError(vector<double> desired);
 	LinkedList<vector<double>, vector<double>> staggerDesired(LinkedList<vector<double>, vector<double>> input);
 	LinkedList<vector<double>, vector<double>> tweakDesired(LinkedList<vector<double>, vector<double>> input);
 	double train(LinkedList<vector<double>, vector<double>> inputs);

@@ -13,9 +13,11 @@ int main()
 
 	master.engine = &engine;
 
-	engine.multipleMissing("a cat skids into a room"); //skids WORKS
-	engine.multipleMissing("a cat skids into a church");
-	engine.multipleMissing("can he leave");
+	engine.findType();
+	//engine.multipleMissing("a cat skids into a room"); //skids WORKS
+	//engine.multipleMissing("a cat skids into a church");
+	//engine.multipleMissing("can he leave");
+
 	/*need to find the structure for the double meaning words*/
 	/*good
 	engine.findTypeDeployment("dogs are crazy"); //dogs FINE

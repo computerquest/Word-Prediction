@@ -43,6 +43,7 @@ void NeuralNetwork::process() {
 	}
 }
 void NeuralNetwork::process(vector<double> input) {
+	currentInput = input;
 	for (int i = 0; i < neuralNetwork.size(); i++) {
 		neuralNetwork.at(0).at(i).setValue(input.at(i));
 	}
@@ -81,6 +82,7 @@ vector<Connection*> NeuralNetwork::getConnections(Neuron neuron) {
 }
 
 void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
+	currentInput = inputs;
 	//loop for each output node
 	vector<vector<Neuron*>> nodes;
 
@@ -173,6 +175,7 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 		}
 	}
 	process();
+	networkError = calcError(desired);
 }
 void NeuralNetwork::fix(vector<double> desired) {
 	//loop for each output node
@@ -267,6 +270,8 @@ void NeuralNetwork::fix(vector<double> desired) {
 		}
 	}
 	process();
+
+	networkError = calcError(desired);
 }
 
 double NeuralNetwork::calcNetInput(Neuron input) {
@@ -377,7 +382,7 @@ double NeuralNetwork::train(LinkedList<vector<double>, vector<double>> inputs) {
 			}
 			cout << "lineError: " << lineError << endl;
 		}
-
+		networkError = error;
 		{
 			if (strikeA > 1 && error - lastError >= -.00001) {
 				strikeA--;
@@ -652,4 +657,13 @@ double NeuralNetwork::calcDifference(vector<double> one, vector<double> two) {
 	}
 
 	return abs((differences / one.size()));
+}
+
+double NeuralNetwork::calcError(vector<double> desired) {
+	double error = 0;
+	for (int i = 0; i < desired.size(); i++) {
+		error += .5 * pow(desired.at(i) - neuralNetwork.at(neuralNetwork.size()-1).at(i).value, 2);
+	}
+
+	return error;
 }
