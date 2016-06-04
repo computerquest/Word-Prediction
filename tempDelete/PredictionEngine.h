@@ -25,6 +25,7 @@ public:
 	PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource);
 
 	vector<POS> multipleMissing(string phrase);
+	vector<POS> multipleMissingTraining(string phrase);
 
 	void saveTraining();
 	void readTraining();

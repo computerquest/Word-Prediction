@@ -7,7 +7,7 @@ PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, M
 	master = resource;
 	nn.initializeNN(inputN, hidden, output);
 	readTraining();
-	read();
+	//read();
 	vector<int> predictHidden;
 	predictHidden.push_back(3);//34 3 6
 	predictHidden.push_back(2);//26 2
@@ -73,77 +73,108 @@ LinkedList<vector<double>, vector<double>> PredictionEngine::createTrain(vector<
 	return masterPrint;
 }
 
-//rgl
 void PredictionEngine::findType() {
 	double lastError = 1000000000;
+	double error = 0;
 	int strike = 3;
-	int generation = 1;
+	int generation = 0;
+	int smallest = 1000000;
+	int total = 0;
 
 	while (true) {
-		//cout << "Generation: " << generation << end;
+		total = 0;
+		generation++;
+
 		for (int i = 0; i < examples.size(); i++) {
 			vector<string> wordStrings = breakDownV(examples.at(i));
 			bool badOne = false;
 
 			for (int a = 0; a < wordStrings.size(); a++) {
-				vector<POS> wtype;
-				for (int b = 0; b < wordStrings.size(); b++) {
-					POS type = master->findWord(wordStrings.at(b)).type;
-
-					if (b == a) {
-						if (type != POS::Noun && type != POS::Verb && type != POS::Adjective) {
-							badOne = true;
-						}
-
-						wtype.push_back(POS::Unknown);
+				for (int secondMissing = 0; secondMissing < wordStrings.size(); secondMissing++) {
+					if (secondMissing == a) {
 						continue;
 					}
+
+					vector<POS> wtype;
+					for (int b = 0; b < wordStrings.size(); b++) {
+						POS type = master->findWord(wordStrings.at(b)).type;
+
+						if (b == a || b == secondMissing) {
+							if (type != POS::Noun && type != POS::Verb && type != POS::Adjective && b != secondMissing) {
+								badOne = true;
+							}
+
+							wtype.push_back(POS::Unknown);
+							continue;
+						}
+
+						wtype.push_back(type);
+					}
+
+					if (badOne == true) {
+						continue;
+					}
+
+					bool aUsed = false;
+
+					for (int findI = 0; findI < 2; findI++) {
+						total++;
+						POS newType;
+						if (aUsed == false && a < secondMissing) {
+							newType = findTypeDeployment(wtype, examples.at(i), a);
+							aUsed = true;
+							wtype.at(a) = newType;
+						}
+						else if (aUsed == true || secondMissing < a) {
+							newType = findTypeDeployment(wtype, examples.at(i), secondMissing);
+							wtype.at(secondMissing) = newType;
+						}
+
+						vector<Neuron> neurons = nn.neuralNetwork.at(0);
+						vector<double> desired;
+
+						double nounV = neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value + neurons.at(4).value
+							+ neurons.at(6).value + neurons.at(27).value + neurons.at(13).value + neurons.at(14).value + neurons.at(17).value + neurons.at(16).value
+							+ neurons.at(15).value;
+
+						double verbV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value +
+							neurons.at(4).value + neurons.at(6).value + neurons.at(28).value + (neurons.at(1).value == 0 ? neurons.at(1).value : 0) + neurons.at(12).value
+							+ neurons.at(14).value + neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
+
+						double adjectiveV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value
+							+ neurons.at(4).value + neurons.at(6).value + neurons.at(29).value + neurons.at(13).value + neurons.at(12).value + neurons.at(14).value
+							+ neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
+
+						double total = nounV + verbV + adjectiveV > 0 ? nounV + verbV + adjectiveV : -1;
+
+						if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
+							desired.push_back(1);
+							desired.push_back((verbV / total) - 1);
+							desired.push_back((adjectiveV / total) - 1);
+						}
+						else if (master->findWord(wordStrings.at(a)).type == POS::Verb) {
+							desired.push_back((nounV / total) - 1);
+							desired.push_back(1);
+							desired.push_back((adjectiveV / total) - 1);
+						}
+						else if (master->findWord(wordStrings.at(a)).type == POS::Adjective) {
+							desired.push_back((nounV / total) - 1);
+							desired.push_back((verbV / total) - 1);
+							desired.push_back(1);
+						}
+
+						nn.fix(desired);
+						error += nn.networkError;
+					}
 				}
-
-				if (badOne == true) {
-					continue;
-				}
-
-				findTypeDeployment(wtype, examples.at(i), a);
-				vector<Neuron> neurons = nn.neuralNetwork.at(0);
-				vector<double> desired;
-
-				double nounV = neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value + neurons.at(4).value
-					+ neurons.at(6).value + neurons.at(27).value + neurons.at(13).value + neurons.at(14).value + neurons.at(17).value + neurons.at(16).value
-					+ neurons.at(15).value;
-
-				double verbV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value +
-					neurons.at(4).value + neurons.at(6).value + neurons.at(28).value + (neurons.at(1).value == 0 ? neurons.at(1).value : 0) + neurons.at(12).value
-					+ neurons.at(14).value + neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
-
-				double adjectiveV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value
-					+ neurons.at(4).value + neurons.at(6).value + neurons.at(29).value + neurons.at(13).value + neurons.at(12).value + neurons.at(14).value
-					+ neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
-
-				double total = nounV + verbV + adjectiveV > 0 ? nounV + verbV + adjectiveV : -1;
-
-				if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
-					desired.push_back(1);
-					desired.push_back((verbV / total) - 1);
-					desired.push_back((adjectiveV / total) - 1);
-				}
-				else if (master->findWord(wordStrings.at(a)).type == POS::Verb) {
-					desired.push_back((nounV / total) - 1);
-					desired.push_back(1);
-					desired.push_back((adjectiveV / total) - 1);
-				}
-				else if (master->findWord(wordStrings.at(a)).type == POS::Adjective) {
-					desired.push_back((nounV / total) - 1);
-					desired.push_back((verbV / total) - 1);
-					desired.push_back(1);
-				}
-
-				nn.fix(desired);
 			}
 		}
+		
+		std::cout << endl;
+		std::cout << "Generation: " << generation << " Error: " << error << " Change: " << error - lastError;
+		std::cout << " Average: " << (error / 3 / total) << endl;
 
-		cout << " Error: " << nn.networkError << " Change: " << nn.networkError - lastError << endl;
-		if (nn.networkError - lastError > -.00001) {
+		if (error - lastError > -.00001) {
 			if (strike > 0) {
 				strike--;
 			}
@@ -151,12 +182,17 @@ void PredictionEngine::findType() {
 				break;
 			}
 		}
-		else if (nn.networkError - lastError < -.0001) {
+		else if (error - lastError < -.0001) {
 			strike = 3;
 		}
 
-		lastError = nn.networkError;
+		if (error < smallest) {
+			smallest = error;
+		}
+		lastError = error;
 	}
+
+	std::cout << "Smallest: " << smallest << " Average: " <<  (smallest/3/total) << " Total: " << total << endl;
 } //can call find type deployment from method and add loop
 
 POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int i) {
@@ -632,3 +668,58 @@ vector<POS> PredictionEngine::multipleMissing(string phrase) {
 
 	return newPOS;
 }
+vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
+	vector<string> wordStrings = breakDownV(phrase);
+	vector<POS> wordTypes;
+	vector<int> flagged;
+	vector<int> flaggedUnknown;
+
+	for (int i = 0; i < wordStrings.size(); i++) {
+		if (master->isDouble(wordStrings.at(i))) {
+			flagged.push_back(i);
+			wordTypes.push_back(POS::Unknown);
+		}
+		else if (master->wordExist(wordStrings.at(i))) {
+			wordTypes.push_back(master->findWord(wordStrings.at(i)).type);
+		}
+		else {
+			wordTypes.push_back(POS::Unknown);
+			flaggedUnknown.push_back(i);
+		}
+	}
+
+	for (int i = 0; i < flagged.size(); i++) {
+		vector<POS> possible = master->doublePossibilities(wordStrings.at(flagged.at(i)));
+
+		double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
+		double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
+		double three = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value;
+
+		if (one > two && one > three && vectorContains(possible, POS::Noun)) {
+			wordTypes[flagged.at(i)] = POS::Noun;
+		}
+		else if (two > one && two > three&& vectorContains(possible, POS::Verb)) {
+			wordTypes[flagged.at(i)] = POS::Verb;
+		}
+		else if (three > one && three > two&& vectorContains(possible, POS::Adjective)) {
+			wordTypes[flagged.at(i)] = POS::Adjective;
+		}
+
+		wordTypes[flagged.at(i)] = findTypeDeployment(wordTypes, phrase, flagged.at(i));
+	}
+
+	vector<POS> newPOS;
+	for (int i = 0; i < flaggedUnknown.size(); i++) {
+		POS newType = findTypeDeployment(wordTypes, phrase, flaggedUnknown.at(i));
+		wordTypes[flaggedUnknown.at(i)] = newType;
+		newPOS.push_back(newType);
+		std::cout << wordStrings.at(flaggedUnknown.at(i)) << " New Type: " << POStoString(newType) << endl;
+	}
+
+	return newPOS;
+}
+/*
+we need to constantly exempt the same parts
+i woudld like to initially exempt randomly and then use that as our constant
+i could also go through and pick one and increment through all the time to exempt
+*/
