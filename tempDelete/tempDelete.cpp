@@ -8,12 +8,17 @@ int main()
 	//hidden layer numbers
 	vector<int> temprorary;
 	temprorary.push_back(4);
+	temprorary.push_back(4);
+	temprorary.push_back(4);
 
 	PredictionEngine engine(30, temprorary, 3, pMaster);
 
 	master.engine = &engine;
 
 	engine.findType();
+
+	engine.nn.optimize();
+
 	//engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	//engine.multipleMissing("a cat skids into a church");
 	//engine.multipleMissing("can he leave");

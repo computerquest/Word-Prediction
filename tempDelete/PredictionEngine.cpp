@@ -8,11 +8,6 @@ PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, M
 	nn.initializeNN(inputN, hidden, output);
 	readTraining();
 	//read();
-	vector<int> predictHidden;
-	predictHidden.push_back(3);//34 3 6
-	predictHidden.push_back(2);//26 2
-	predictHidden.push_back(8);//4  8
-	predictNN.initializeNN(33, predictHidden, 6); //28.??? 27.686 27.2???
 }
 
 void PredictionEngine::saveTraining() {
@@ -725,8 +720,3 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 
 	return newPOS;
 }
-/*
-we need to constantly exempt the same parts
-i woudld like to initially exempt randomly and then use that as our constant
-i could also go through and pick one and increment through all the time to exempt
-*/

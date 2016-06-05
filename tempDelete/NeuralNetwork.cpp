@@ -83,6 +83,7 @@ vector<Connection*> NeuralNetwork::getConnections(Neuron neuron) {
 
 void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 	currentInput = inputs;
+	trainingValues.add(inputs, desired);
 	//loop for each output node
 	vector<vector<Neuron*>> nodes;
 
@@ -178,6 +179,8 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 	networkError = calcError(desired);
 }
 void NeuralNetwork::fix(vector<double> desired) {
+	trainingValues.add(currentInput, desired);
+
 	//loop for each output node
 	vector<vector<Neuron*>> nodes;
 
@@ -408,7 +411,67 @@ double NeuralNetwork::train(LinkedList<vector<double>, vector<double>> inputs) {
 		lastError = error;
 		cout << endl;
 	}
+	networkError = greatest;
 
+	return greatest;
+}
+double NeuralNetwork::train() {
+	double lastError = 10000;
+	int strikeA = 3;
+	double greatest = 1000000000;
+	double hundredthError = 100000000;
+	LinkedList<vector<double>, vector<double>> inputs = trainingValues;
+
+	for (int s = 1; true; s++) {
+		double error = 0;
+		cout << "gen: " << s << endl;
+		for (int a = 0; a < inputs.size(); a++) {
+			double lineError = 0;
+			fix(inputs.getKeyI(a), inputs.getValueI(a));
+
+			for (int i = 0; i < inputs.getValueI(a).size(); i++) {
+				lineError += .5 * pow(inputs.getValueI(a).at(i) - neuralNetwork.at(neuralNetwork.size() - 1).at(i).value, 2);
+			}
+			error += lineError;
+
+			cout << inputs.getValueI(a).at(0);
+			for (int i = 1; i < inputs.getValueI(a).size(); i++) {
+				cout << " " << inputs.getValueI(a).at(i);
+			}
+			cout << ": " << neuralNetwork.at(neuralNetwork.size() - 1).at(0).value << " ";
+			for (int i = 1; i < neuralNetwork.at(neuralNetwork.size() - 1).size(); i++) {
+				cout << neuralNetwork.at(neuralNetwork.size() - 1).at(i).value << " ";
+			}
+			cout << "lineError: " << lineError << endl;
+		}
+		networkError = error;
+		{
+			if (strikeA > 1 && error - lastError >= -.00001) {
+				strikeA--;
+			}
+			else if (strikeA <= 1) {
+				break;
+			}
+			else if (error - lastError <= -.0001) {
+				strikeA = 3;
+			}
+		}
+
+		if (hundredthError - error > -.0001 && s % 100 == 0) {
+			break;
+		}
+
+		if (error < greatest) {
+			greatest = error;
+		}
+
+		cout << "error: " << error << " change: " << error - lastError << " smallest: " << greatest << endl;
+
+		lastError = error;
+		cout << endl;
+	}
+
+	networkError = greatest;
 	return greatest;
 }
 
@@ -666,4 +729,68 @@ double NeuralNetwork::calcError(vector<double> desired) {
 	}
 
 	return error;
+}
+
+vector<Connection*> NeuralNetwork::getConnectionsFrom(Neuron neuron) {
+	double id = neuron.id;
+	vector<Connection*> solution;
+	for (int i = 0; i < connections.size(); i++) {
+		if (connections.at(i)->sendId == id) {
+			solution.push_back(connections.at(i));
+		}
+	}
+
+	return solution;
+}
+
+void NeuralNetwork::optimize() {
+	
+	train();
+
+	vector<int> hiddenSize;
+	for (int i = neuralNetwork.size()-2; i > 0; i--) {
+		hiddenSize.push_back(neuralNetwork.at(i).size());
+	}
+
+	double lastError = networkError;
+	for (int i = 0; i < hiddenSize.size(); i++) {
+		int direction = -1;
+		for (int gen = 0; true; gen++) {
+			train();
+
+			if (lastError >= networkError) {
+				hiddenSize.at(i) += direction;
+
+				if (hiddenSize.at(i) == 0) {
+					hiddenSize.erase(hiddenSize.begin() + i);
+				}
+			}
+			else {
+				if (gen == 0) {
+					direction *= -1;
+					lastError = networkError;
+					continue;
+				}
+
+				if (gen == 1 && direction == 1) {
+					hiddenSize.at(i) -= 1;
+
+					if (hiddenSize.at(i) == 0) {
+						hiddenSize.erase(hiddenSize.begin() + i);
+					}
+				}
+
+				lastError = networkError;
+				break;
+			}
+
+			lastError = networkError;
+			initializeNN(neuralNetwork.at(0).size(), hiddenSize, 3);
+		}
+	}
+
+	cout << "Dimensions (L->S): ";
+	for (int i = 0; i < hiddenSize.size(); i++) {
+		cout << hiddenSize.at(i);
+	}
 }

@@ -14,8 +14,11 @@ public:
 	vector <Connection*> connections;
 	vector<double> currentInput;
 	double networkError = 0;
+	LinkedList<vector<double>, vector<double>> trainingValues;
 
 	Neuron * findNeuron(double id);
+
+	void optimize(); 
 
 	void reset();
 
@@ -23,6 +26,7 @@ public:
 	void process(vector<double> input);
 
 	vector<Connection*> getConnections(Neuron neuron);
+	vector<Connection*> getConnectionsFrom(Neuron neuron);
 
 	void fix(vector<double> inputs, vector<double> desired);
 
@@ -39,6 +43,7 @@ public:
 	LinkedList<vector<double>, vector<double>> staggerDesired(LinkedList<vector<double>, vector<double>> input);
 	LinkedList<vector<double>, vector<double>> tweakDesired(LinkedList<vector<double>, vector<double>> input);
 	double train(LinkedList<vector<double>, vector<double>> inputs);
+	double train();
 
 	void autoPrune(LinkedList<vector<double>, vector<double>> input, bool);
 	void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber, bool);
