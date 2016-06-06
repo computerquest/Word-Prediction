@@ -161,6 +161,7 @@ void PredictionEngine::findType() {
 							desired.push_back(1);
 						}
 
+						training.add(nn.currentInput, desired);
 						nn.fix(desired);
 						error += nn.networkError;
 					}
@@ -719,4 +720,37 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 	}
 
 	return newPOS;
+}
+
+void PredictionEngine::mergeTraining() {
+	for (int i = 0; i < training.size(); i++) {
+		vector<double> currentInput = training.getKeyI(i);
+
+		for (int a = 0; a < training.size(); a++) {
+			if (i == a) {
+				continue;
+			}
+			vector<double> secondaryInput = training.getKeyI(a);
+			bool similar = true;
+
+			for (int c = 0; c < secondaryInput.size(); c++) {
+				if (secondaryInput.at(c) == 0 & currentInput.at(c) == 1 || secondaryInput.at(c) == 1 & currentInput.at(c) == 1) {
+					similar = false;
+					break;
+				}
+			}
+
+			if (similar == false) {
+				continue;
+			}
+
+			vector<double> currentDesired = training.getValueI(i);
+			vector<double> secondaryDesired = training.getValueI(a);
+			for (int c = 0; c < currentDesired.size(); c++) {
+				currentDesired.at(c) = currentDesired.at(c) >= secondaryDesired.at(c) ? currentDesired.at(c) : secondaryDesired.at(c);
+			}
+
+			training.deleteIndex(a);
+		}
+	}
 }

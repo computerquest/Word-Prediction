@@ -45,8 +45,8 @@ public:
 	double train(LinkedList<vector<double>, vector<double>> inputs);
 	double train();
 
-	void autoPrune(LinkedList<vector<double>, vector<double>> input, bool);
-	void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber, bool);
+	void autoPrune();
+	void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber);
 	double calcSigmoid(double netInput);
 	double calcTanh(double netInput);
 	double tanhDerivative(double x);

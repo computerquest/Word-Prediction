@@ -7,9 +7,9 @@ int main()
 	MasterResource* pMaster = &master;
 	//hidden layer numbers
 	vector<int> temprorary;
-	temprorary.push_back(4);
-	temprorary.push_back(4);
-	temprorary.push_back(4);
+	temprorary.push_back(2);
+	temprorary.push_back(2);
+	//temprorary.push_back(4);
 
 	PredictionEngine engine(30, temprorary, 3, pMaster);
 
@@ -17,7 +17,7 @@ int main()
 
 	engine.findType();
 
-	engine.nn.optimize();
+	engine.nn.autoPrune();
 
 	//engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	//engine.multipleMissing("a cat skids into a church");

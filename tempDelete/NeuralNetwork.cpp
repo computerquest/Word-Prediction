@@ -475,18 +475,14 @@ double NeuralNetwork::train() {
 	return greatest;
 }
 
-void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, bool mods) {
-	if (mods == true) {
-		input = tweakDesired(input);
-		input = staggerDesired(input);
-	}
+void NeuralNetwork::autoPrune() {
 	vector<int> hiddenLayers;
 
 	for (int i = 1; i < neuralNetwork.size() - 1; i++) {
 		hiddenLayers.push_back(neuralNetwork.at(i).size());
 	}
 
-	double smallestError = train(input);
+	double smallestError = train();
 
 	for (int i = 1; i < neuralNetwork.size() - 1; i++) {
 		cout << i << endl;
@@ -501,7 +497,7 @@ void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, 
 			}
 
 			initializeNN(neuralNetwork.at(0).size(), newHiddenLayers, neuralNetwork.at(neuralNetwork.size() - 1).size());
-			double currentError = train(input);
+			double currentError = train();
 
 			if (currentError < smallestError) {
 				cout << "dimesions: ";
@@ -529,12 +525,7 @@ void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, 
 
 	initializeNN(neuralNetwork.at(0).size(), hiddenLayers, neuralNetwork.at(neuralNetwork.size() - 1).size());
 }
-void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber, bool mods) {
-	if (mods == true) {
-		input = tweakDesired(input);
-		input = staggerDesired(input);
-	}
-
+void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber) {
 	vector<int> hiddenLayers;
 
 	for (int i = 1; i < neuralNetwork.size() - 1; i++) {
