@@ -85,9 +85,9 @@ void PredictionEngine::findType() {
 
 			for (int a = 0; a < wordStrings.size(); a++) {
 				bool badOne = false;
-				
+
 				//did the wierd condition because if it set it to negative one normally it returns false
-				for (int secondMissing = -1; secondMissing+1 < wordStrings.size()+1; secondMissing++) {
+				for (int secondMissing = -1; secondMissing + 1 < wordStrings.size() + 1; secondMissing++) {
 					if (secondMissing == a) {
 						continue;
 					}
@@ -168,7 +168,7 @@ void PredictionEngine::findType() {
 				}
 			}
 		}
-		
+
 		std::cout << endl;
 		std::cout << "Generation: " << generation << " Error: " << error << " Change: " << error - lastError;
 
@@ -198,392 +198,307 @@ void PredictionEngine::findType() {
 	}
 } //can call find type deployment from method and add loop
 
-POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int i) {
-	vector<Word> word;
-	vector<double> masterPrint;
-	vector<string> wordS = breakDownV(phrase);
-	int unknown = 0;
-	SStructure lastPhraseStruct = master->findStructurePercision(lastPhraseGlobal);
+POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int targetWordIndex) {
+	vector<string> wordStrings = breakDownV(phrase);
+	LinkedList<POS, int> typeBlocks;
+	POS lastPOS = POS::Unknown;
 
-	Neuron nounI(0);
-	Neuron verbI(0);
-	Neuron adjectiveI(0);
-	Neuron conjunctionI(0); // have list
-	Neuron articleI(0);//have list
-	Neuron prepositionI(0); //have list
+	//creates POS blocks
+	for (int i = 0; i < wtype.size(); i++) {
+		//check if it is a definitive word
+		if (wtype.at(i) == POS::Verb | wtype.at(i) == POS::Noun | wtype.at(i) == POS::Preposition | wtype.at(i) == POS::Conjuction) {
+			if (lastPOS == POS::Preposition | lastPOS == POS::Verb | lastPOS == POS::Conjuction) {
+				typeBlocks.add(wtype.at(i), i);
+				typeBlocks.add(lastPOS != POS::Unknown ? lastPOS : wtype.at(i), i - 1);
+				continue;
+			}
 
-	Neuron predictN(0);
-	Neuron predictV(0);
-	Neuron predictA(0);
-
-	Neuron endA(0);
-	Neuron endVerb(0);
-	Neuron endN(0);
-
-	Neuron nextNoun(0);
-	Neuron nextVerb(0);
-	Neuron nextAdjective(0);
-	Neuron nextArticle(0);
-	Neuron nextPreposition(0);
-	Neuron nextConjunction(0);
-
-	Neuron prepositionNG(0);
-	Neuron nounNG(0);
-	Neuron verbNG(0);
-	Neuron adjectiveNG(0);
-	Neuron conjunctionNG(0);
-	Neuron articleNG(0);
-
-	Neuron bestNounN(0);
-	Neuron bestVerbN(0);
-	Neuron bestAdjectiveN(0);
-
-	Neuron bestNounWn(0);
-	Neuron bestVerbWn(0);
-	Neuron bestAdjectiveWn(0);
-
-	Neuron wordLength(0);
-	Neuron vowelLength(0);
-	Neuron constanantLength(0);
-
-	Neuron nounN(0);
-	Neuron verbN(0);
-	Neuron adjectiveN(0);
-	Neuron conjunctionN(0);
-	Neuron prepositionN(0);
-	Neuron articleN(0);
-
-	vector<double> blueprint;
-	SStructure structure;
-
-	structure = master->findPartailStructure(wtype);
-
-	vector<SStructure> possibilities = master->matchPossibleSS(wtype);
-	//inputs nounI
-	if (i > 0 && wtype.size() > 1) {
-		POS type = wtype.at(i - 1);
-
-		if (type == POS::Noun) {
-			nounI.setValue(1);
-		}
-		else if (type == POS::Verb) {
-			verbI.setValue(1);
-		}
-		else if (type == POS::Adjective) {
-			adjectiveI.setValue(1);
-		}
-		else if (type == POS::Preposition) {
-			prepositionI.setValue(1);
-		}
-		else if (type == POS::Conjuction) {
-			conjunctionI.setValue(1);
-		}
-		else if (type == POS::Article) {
-			articleI.setValue(1);
+			typeBlocks.add(lastPOS != POS::Unknown ? lastPOS : wtype.at(i), i - 1);
+			lastPOS = wtype.at(i);
 		}
 	}
 
-	//predict with ss predictN
-	if (structure.component.size() > 1) {
-		POS type = structure.component.at(i);
+	//does it fall within noun block
+	double nounBlock = 0;
 
-		if (type == POS::Noun) {
-			predictN.setValue(1);
-		}
-		else if (type == POS::Verb) {
-			predictV.setValue(1);
-		}
-		else if (type == POS::Adjective) {
-			predictA.setValue(1);
-		}
-	}
+	//what block is in front
+	double frontBlockNoun = 0;
+	double frontBlockVerb = 0;
+	double frontBlockConjunction = 0;
+	double frontBlockPreposition = 0;
 
-	//next nextNoun
-	if (i < wtype.size() - 1 && (structure.component.size() > 1)) {
-		POS type = structure.component.at(i + 1);
+	//what block is in back
+	double backBlockNoun = 0;
+	double backBlockVerb = 0;
+	double backBlockConjunction = 0;
+	double backBlockPreposition = 0;
 
-		if (type == POS::Noun) {
-			nextNoun.setValue(1);
-		}
-		else if (type == POS::Verb) {
-			nextVerb.setValue(1);
-		}
-		else if (type == POS::Adjective) {
-			nextAdjective.setValue(1);
-		}
-		else if (type == POS::Article) {
-			nextArticle.setValue(1);
-		}
-		else if (type == POS::Preposition) {
-			nextPreposition.setValue(1);
-		}
-		else if (type == POS::Conjuction) {
-			nextConjunction.setValue(1);
-		}
-	}
-
-	//ending endN
+	//ALL BLOCK STUFF
 	{
-		if ((wordS.at(i)).length() > 3) {
-			string end = wordS.at(i).substr(wordS.at(i).length() - 1, 1);
-			string end2 = "";
-			string end3 = "";
-			string end4 = "";
+		int wordBlock = -1;
 
-			if (wordS.at(i).length() > 4) {
-				end2 = wordS.at(i).substr(wordS.at(i).length() - 2, 2);
-				if (wordS.at(i).length() > 5) {
-					end3 = wordS.at(i).substr(wordS.at(i).length() - 3, 3);
+		//find which block is yours
+		for (int i = 0; i < typeBlocks.size() && i > 0 ? (typeBlocks.getValueI(i - 1) < targetWordIndex) : true; i++) {
+			int currentLast = typeBlocks.getValueI(i);
+			int currentFirst = 0;
+			if (i > 0) {
+				int currentFirst = typeBlocks.getValueI(i - 1);
+			}
 
-					if (wordS.at(i).length() > 6) {
-						end4 = wordS.at(i).substr(wordS.at(i).length() - 4, 4);
-					}
+			if (i <= currentLast && i >= currentFirst) {
+				wordBlock = i;
+
+				if (typeBlocks.getKeyI(i) == POS::Noun) {
+					nounBlock = 1;
 				}
-			}
 
-			if (end == "s" || end3 == "ion" || end3 == "acy" || end4 == "ence" || end4 == "ance" || end4 == "hood" || end2 == "ar" || end2 == "or"
-				|| end3 == "ism" || end3 == "ist" || end4 == "ment" || end4 == "ness" || end == "y" || end3 == "ity") {
-				endN.setValue(1);
-			}
-
-			if (end2 == "en" || end3 == "ify" || end3 == "ate" || end3 == "ize") {
-				endVerb.setValue(1);
-			}
-
-			if (end2 == "al" || end3 == "ful" || end2 == "ly" || end2 == "ic" || end3 == "ish" || end4 == "like" || end3 == "ous" || end == "y"
-				|| end3 == "ate" || end3 == "able" || end3 == "ible") {
-				endA.setValue(1);
+				break;
 			}
 		}
-	}
 
-	//most often type in value nounNG RATIO
-	if (i > 0) {
-		NGram<Word> wordNGram = master->findNGram(master->findWord(wordS.at(i - 1)));
+		//front blocks
+		if (wordBlock > 0) {
+			POS type = typeBlocks.getKeyI(wordBlock - 1);
 
-		double pTotal = 0;
-		double nTotal = 0;
-		double vTotal = 0;
-		double aTotal = 0;
-		double cTotal = 0;
-		double articleTotal = 0;
-		double total = 0;
-		for (int a = 0; a < wordNGram.content.size(); a++) {
-			POS type = wordNGram.content.getValueI(a).type;
 			if (type == POS::Noun) {
-				nTotal += wordNGram.content.getKeyI(a);
+				frontBlockNoun = 1;
 			}
 			else if (type == POS::Verb) {
-				vTotal += wordNGram.content.getKeyI(a);
-			}
-			else if (type == POS::Adjective) {
-				aTotal += wordNGram.content.getKeyI(a);
+				frontBlockVerb = 1;
 			}
 			else if (type == POS::Conjuction) {
-				cTotal += wordNGram.content.getKeyI(a);
+				frontBlockConjunction = 1;
 			}
 			else if (type == POS::Preposition) {
-				pTotal += wordNGram.content.getKeyI(a);
-			}
-			else if (type == POS::Article) {
-				articleTotal += wordNGram.content.getKeyI(a);
+				frontBlockPreposition = 1;
 			}
 		}
 
-		total = nTotal + vTotal + aTotal + cTotal + pTotal + articleTotal;
-
-		if (total > 0) {
-			nounNG.setValue(nTotal / total);
-			verbNG.setValue(vTotal / total);
-			adjectiveNG.setValue(aTotal / total);
-		}
-	}
-
-	//last structure stuff bestNounN
-	{
-		if (lastPhraseStruct.component.size() != 0) {
-			NGram<SStructure> lastStruct = master->findNGramS(lastPhraseStruct.component);
-			int index = -1;
-
-			for (int a = 0; a < lastStruct.content.size(); a++) {
-				vector<POS> currentPOS = lastStruct.content.getValueI(a).component;
-
-				int greatest = 0;
-
-				for (int b = 0; b < possibilities.size(); b++) {
-					if (currentPOS == possibilities.at(b).component) {
-						if (greatest < lastStruct.content.getKeyI(a)) {
-							index = a;
-							greatest = lastStruct.content.getKeyI(a);
-						}
-					}
-				}
-			}
-
-			if (index != -1) {
-				SStructure seconStruct = lastStruct.content.getValueI(index);
-
-				if (seconStruct.component.size() > i + 1) {
-					POS type = seconStruct.component.at(i);
-
-					if (type == POS::Noun) {
-						bestNounN.setValue(1);
-					}
-					else if (type == POS::Verb) {
-						bestVerbN.setValue(1);
-					}
-					else if (type == POS::Adjective) {
-						bestAdjectiveN.setValue(1);
-					}
-				}
-			}
-		}
-	}
-
-	//find the type of the most often occuring word bestWn
-	if (i > 0) {
-		NGram<Word> wordNGram = master->findNGram(master->findWord(wordS.at(i - 1)));
-		int typeI = wordNGram.findGreatest();
-
-		if (typeI != -1) {
-			POS type = wordNGram.content.getValueI(typeI).type;
+		//back blocks
+		if (wordBlock < typeBlocks.size() - 1) {
+			POS type = typeBlocks.getKeyI(wordBlock + 1);
 
 			if (type == POS::Noun) {
-				bestNounWn.setValue(1);
+				backBlockNoun = 1;
 			}
 			else if (type == POS::Verb) {
-				bestVerbWn.setValue(1);
+				backBlockVerb = 1;
+			}
+			else if (type == POS::Conjuction) {
+				backBlockConjunction = 1;
+			}
+			else if (type == POS::Preposition) {
+				backBlockPreposition = 1;
+			}
+		}
+	}
+
+	vector<SStructure> possibleStructure = master->matchPossibleSS(wtype);
+	SStructure structure = master->findStructurePercision(wtype);
+
+	//ALL STRUCTURE STUFF
+	//what the struture says comes next
+	double predictNounSS = 0;
+	double predictVerbSS = 0;
+	double predictAdjectiveSS = 0;
+
+	if (structure.component.size() > 1) {
+		//predictNounSS
+		{
+			POS type = structure.component.at(targetWordIndex);
+			if (type == POS::Noun) {
+				predictNounSS = 1;
 			}
 			else if (type == POS::Adjective) {
-				bestAdjectiveWn.setValue(1);
+				predictAdjectiveSS = 1;
+			}
+			else if (type == POS::Verb) {
+				predictVerbSS = 1;
 			}
 		}
+
 	}
 
-	//goes through possibility sstructure and finds the amount supported for each type nounN RATIO
-	{
-		double nTotal = 0;
-		double vTotal = 0;
-		double aTotal = 0;
-		double cTotal = 0;
-		double pTotal = 0;
-		double articleTotal = 0;
+	//LAST WORD
+	//the type of the word before
+	double lastWTypeNoun = 0;
+	double lastWTypeAdjective = 0;
+	double lastWTypeVerb = 0;
+	double lastWTypePreposition = 0;
+	double lastWTypeConjunction = 0;
+	double lastWTypeArticle = 0;
+
+	//the ngrams
+	double indicatesNoun = 0;
+	double indicatesVerb = 0;
+	double indicatesAdjective = 0;
+	if (targetWordIndex > 0) {
+		POS type = wtype.at(targetWordIndex - 1);
+
+		if (type == POS::Adjective) {
+			lastWTypeAdjective = 1;
+		}
+		else if (type == POS::Noun) {
+			lastWTypeNoun = 1;
+		}
+		else if (type == POS::Verb) {
+			lastWTypeVerb = 1;
+		}
+		else if (type == POS::Conjuction) {
+			lastWTypeConjunction = 1;
+		}
+		else if (type == POS::Preposition) {
+			lastWTypePreposition = 1;
+		}
+		else if (type == POS::Article) {
+			lastWTypeArticle = 1;
+		}
+
+		NGram<Word> lastWordNGram = master->findNGram(master->findWord(wordStrings.at(targetWordIndex - 1)));
+		LinkedList<int, Word> usedWords = lastWordNGram.content;
+
+		double usedNouns = 0;
+		double usedVerbs = 0;
+		double usedAdjectives = 0;
 		double total = 0;
-		for (int a = 0; a < possibilities.size(); a++) {
-			if (possibilities.at(a).component.size() > i) {
-				POS type = possibilities.at(a).component.at(i);
-
-				if (type == POS::Noun) {
-					nTotal += 1;
-				}
-				else if (type == POS::Verb) {
-					vTotal += 1;
-				}
-				else if (type == POS::Adjective) {
-					aTotal += 1;
-				}
-				else if (type == POS::Conjuction) {
-					cTotal += 1;
-				}
-				else if (type == POS::Preposition) {
-					pTotal += 1;
-				}
-				else if (type == POS::Article) {
-					articleTotal += 1;
-				}
+		for (int i = 0; i < usedWords.size(); i++) {
+			POS type = usedWords.getValueI(i).type;
+			if (type == POS::Noun) {
+				usedNouns++;
 			}
-		}
-
-		total = nTotal + aTotal + vTotal + cTotal + pTotal + articleTotal;
-		if (total > 0) {
-			nounN.setValue(nTotal / total);
-			verbN.setValue(vTotal / total);
-			adjectiveN.setValue(aTotal / total);
-		}
-	}
-
-	//type input from last word
-	blueprint.push_back(nounI.value);
-	blueprint.push_back(verbI.value);
-	blueprint.push_back(adjectiveI.value);
-	blueprint.push_back(conjunctionI.value);
-	blueprint.push_back(prepositionI.value);
-	blueprint.push_back(articleI.value);
-
-	blueprint.push_back(predictN.value);
-	blueprint.push_back(predictV.value);
-	blueprint.push_back(predictA.value);
-
-	//what the possiblities say could happen next in a ratio
-	blueprint.push_back(nounN.value);
-	blueprint.push_back(verbN.value);
-	blueprint.push_back(adjectiveN.value);
-
-	blueprint.push_back(nextNoun.value);
-	blueprint.push_back(nextVerb.value);
-	blueprint.push_back(nextAdjective.value);
-	blueprint.push_back(nextConjunction.value);
-	blueprint.push_back(nextPreposition.value);
-	blueprint.push_back(nextArticle.value);
-
-	//ratio of key and total size for each type of word 
-	blueprint.push_back(nounNG.value);
-	blueprint.push_back(verbNG.value);
-	blueprint.push_back(adjectiveNG.value);
-
-	//find anything possibility matching the last ngrams content NOT WORKING?
-	blueprint.push_back(bestNounN.value);
-	blueprint.push_back(bestVerbN.value);
-	blueprint.push_back(bestAdjectiveN.value);
-
-	//highest score word in ngram 
-	blueprint.push_back(bestNounWn.value);
-	blueprint.push_back(bestVerbWn.value);
-	blueprint.push_back(bestAdjectiveWn.value);
-
-	blueprint.push_back(endN.value);
-	blueprint.push_back(endVerb.value);
-	blueprint.push_back(endA.value);
-
-	nn.process(blueprint);
-
-	std::cout << "Find Type Values " << nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value << " " << nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value << " "
-		<< nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value << endl;
-
-	vector<POS> anotherOne;
-	for (int s = 0; s < wtype.size(); s++) {
-		double noun = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
-		double verb = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
-		double adjective = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value;
-		if (wtype.at(s) == POS::Unknown) {
-			if (noun > adjective && noun > verb) {
-				anotherOne.push_back(POS::Noun);
+			else if (type == POS::Verb) {
+				usedVerbs++;
 			}
-			else if (adjective > noun && adjective > verb) {
-				anotherOne.push_back(POS::Adjective);
+			else if (type == POS::Adjective) {
+				usedAdjectives++;
 			}
 			else {
-				anotherOne.push_back(POS::Verb);
+				total++;
 			}
 		}
-	}
-	lastPhraseGlobal = anotherOne;
 
-	double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
-	double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
-	double three = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value;
+		double total = usedNouns + usedVerbs + usedAdjectives + total;
 
-	if (one > two && one > three) {
-		return POS::Noun;
-	}
-	else if (two > one && two > three) {
-		return POS::Verb;
-	}
-	else if (three > one && three > two) {
-		return POS::Adjective;
+		indicatesNoun = usedNouns / total;
+		indicatesVerb = usedVerbs / total;
+		indicatesAdjective = usedAdjectives / total;
 	}
 
-	return POS::Unknown;
+	//THE WORD AFTER
+	//the type of the next word
+	double afterNoun = 0;
+	double afterVerb = 0;
+	double afterAdjective = 0;
+	double afterConjunction = 0;
+	double afterPreposition = 0;
+	double afterArticle = 0;
+
+	//the type of word that generally calls the after word
+	double afterCallerNoun = 0;
+	double afterCallerVerb = 0;
+	double afterCallerAdjective = 0;
+	double afterCallerConjunction = 0;
+	double afterCallerPreposition = 0;
+	double afterCallerArticle = 0;
+	if (targetWordIndex < wordStrings.size() - 1) {
+		POS type = wtype.at(targetWordIndex + 1);
+
+		if (type == POS::Adjective) {
+			afterAdjective = 1;
+		}
+		else if (type == POS::Noun) {
+			afterNoun = 1;
+		}
+		else if (type == POS::Verb) {
+			afterVerb = 1;
+		}
+		else if (type == POS::Conjuction) {
+			afterConjunction = 1;
+		}
+		else if (type == POS::Preposition) {
+			afterPreposition = 1;
+		}
+		else if (type == POS::Article) {
+			afterArticle = 1;
+		}
+
+		//see which types of words use this word
+		Word afterWord = master->findWord(wordStrings.at(targetWordIndex + 1));
+		LinkedList<double, POS> wordCall;
+		for (int i = 0; i < master->ngramML.size(); i++) {
+			NGram<Word> currentNGram = master->ngramML.at(i);
+
+			if (currentNGram.content.containsV(afterWord)) {
+				wordCall.add(currentNGram.content.getKeyV(afterWord), currentNGram.subject.type);
+			}
+		}
+
+		double nounUsed = 0;
+		double verbUsed = 0;
+		double adjectiveUsed = 0;
+		double conjunctionUsed = 0;
+		double prepositionUsed = 0;
+		double articleUsed = 0;
+		double total = 0;
+		for (int i = 0; i < wordCall.size(); i++) {
+			POS callerType = wordCall.getValueI(i);
+
+			if (callerType == POS::Noun) {
+				nounUsed += wordCall.getKeyI(i);
+			}
+			else if (callerType == POS::Verb) {
+				verbUsed += wordCall.getKeyI(i);
+			}
+			else if (callerType == POS::Adjective) {
+				adjectiveUsed += wordCall.getKeyI(i);
+			}
+			else if (callerType == POS::Conjuction) {
+				conjunctionUsed += wordCall.getKeyI(i);
+			}
+			else if (callerType == POS::Preposition) {
+				prepositionUsed += wordCall.getKeyI(i);
+			}
+			else if (callerType == POS::Article) {
+				articleUsed += wordCall.getKeyI(i);
+			}
+		}
+		total = nounUsed + verbUsed + adjectiveUsed + conjunctionUsed + prepositionUsed + articleUsed;
+
+		//creates the ratio
+		afterCallerNoun = nounUsed / total;
+		afterCallerVerb = verbUsed / total;
+		afterCallerAdjective = adjectiveUsed / total;
+	}
+
+	//POSSIBLE STRUCTURE
+	//ratio of what is at target
+	double nounPossible = 0;
+	double verbPossible = 0;
+	double adjectivePossible = 0;
+
+	if (possibleStructure.size() > 0) {
+		double nounOccerence = 0;
+		double verbOccerence = 0;
+		double adjectiveOccerence = 0;
+
+		for (int i = 0; i < possibleStructure.size(); i++) {
+			POS type = possibleStructure.at(i).component.at(targetWordIndex);
+
+			if (type == POS::Noun) {
+				nounOccerence++;
+			}
+			else if (type == POS::Verb) {
+				verbOccerence++;
+			}
+			else if (type == POS::Adjective) {
+				adjectiveOccerence++;
+			}
+		}
+		double total = nounOccerence + verbOccerence + adjectiveOccerence;
+		nounPossible = nounOccerence / total;
+		verbPossible = verbOccerence / total;
+		adjectivePossible = adjectiveOccerence / total;
+	}
 }
 
 void PredictionEngine::filterExamples() {
