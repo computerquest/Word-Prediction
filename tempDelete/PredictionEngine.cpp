@@ -575,6 +575,20 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	neuralNetworkInput.push_back(adjectiveEnding);
 
 	nn.process(neuralNetworkInput);
+
+	double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
+	double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
+	double three = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value;
+
+	if (one > two && one > three) {
+		return POS::Noun;
+	}
+	else if (two > one && two > three) {
+		return POS::Verb;
+	}
+	else if (three > one && three > two) {
+		return POS::Adjective;
+	}
 }
 
 void PredictionEngine::filterExamples() {
