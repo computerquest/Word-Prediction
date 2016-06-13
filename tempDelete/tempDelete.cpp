@@ -11,15 +11,11 @@ int main()
 	temprorary.push_back(2);
 	//temprorary.push_back(4);
 
-	PredictionEngine engine(30, temprorary, 3, pMaster);
+	PredictionEngine engine(38, temprorary, 3, pMaster);
 
 	master.engine = &engine;
 
-	engine.findType();
-
-	engine.nn.autoPrune();
-
-	//engine.multipleMissing("a cat skids into a room"); //skids WORKS
+	engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	//engine.multipleMissing("a cat skids into a church");
 	//engine.multipleMissing("can he leave");
 

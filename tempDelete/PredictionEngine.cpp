@@ -202,6 +202,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	vector<string> wordStrings = breakDownV(phrase);
 	LinkedList<POS, int> typeBlocks;
 	POS lastPOS = POS::Unknown;
+	vector<double> neuralNetworkInput; //thought about making pointer but would have to modify nn class
 
 	//creates POS blocks
 	for (int i = 0; i < wtype.size(); i++) {
@@ -361,7 +362,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			}
 		}
 
-		double total = usedNouns + usedVerbs + usedAdjectives + total;
+		total = usedNouns + usedVerbs + usedAdjectives + total;
 
 		indicatesNoun = usedNouns / total;
 		indicatesVerb = usedVerbs / total;
@@ -483,6 +484,97 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		verbPossible = verbOccerence / total;
 		adjectivePossible = adjectiveOccerence / total;
 	}
+
+	//ENDING
+	//the types of endings
+	double nounEnding = 0;
+	double adjectiveEnding = 0;
+	double verbEnding = 0;
+
+	{
+		if ((wordStrings.at(targetWordIndex)).length() > 3) {
+			string end = wordStrings.at(targetWordIndex).substr(wordStrings.at(targetWordIndex).length() - 1, 1);
+			string end2 = "";
+			string end3 = "";
+			string end4 = "";
+
+			if (wordStrings.at(targetWordIndex).length() > 4) {
+				end2 = wordStrings.at(targetWordIndex).substr(wordStrings.at(targetWordIndex).length() - 2, 2);
+				if (wordStrings.at(targetWordIndex).length() > 5) {
+					end3 = wordStrings.at(targetWordIndex).substr(wordStrings.at(targetWordIndex).length() - 3, 3);
+
+					if (wordStrings.at(targetWordIndex).length() > 6) {
+						end4 = wordStrings.at(targetWordIndex).substr(wordStrings.at(targetWordIndex).length() - 4, 4);
+					}
+				}
+			}
+
+			if (end == "s" || end3 == "ion" || end3 == "acy" || end4 == "ence" || end4 == "ance" || end4 == "hood" || end2 == "ar" || end2 == "or"
+				|| end3 == "ism" || end3 == "ist" || end4 == "ment" || end4 == "ness" || end == "y" || end3 == "ity") {
+				nounEnding = 1;
+			}
+
+			if (end2 == "en" || end3 == "ify" || end3 == "ate" || end3 == "ize") {
+				verbEnding = 1;
+			}
+
+			if (end2 == "al" || end3 == "ful" || end2 == "ly" || end2 == "ic" || end3 == "ish" || end4 == "like" || end3 == "ous" || end == "y"
+				|| end3 == "ate" || end3 == "able" || end3 == "ible") {
+				adjectiveEnding = 1;
+			}
+		}
+	}
+
+	//38 of them
+	neuralNetworkInput.push_back(nounBlock);
+
+	neuralNetworkInput.push_back(frontBlockNoun);
+	neuralNetworkInput.push_back(frontBlockVerb);
+	neuralNetworkInput.push_back(frontBlockConjunction);
+	neuralNetworkInput.push_back(frontBlockPreposition);
+
+	neuralNetworkInput.push_back(backBlockNoun);
+	neuralNetworkInput.push_back(backBlockVerb);
+	neuralNetworkInput.push_back(backBlockConjunction);
+	neuralNetworkInput.push_back(backBlockPreposition);
+
+	neuralNetworkInput.push_back(hasNounBlock);
+	neuralNetworkInput.push_back(hasVerbBlock);
+
+	neuralNetworkInput.push_back(lastWTypeNoun);
+	neuralNetworkInput.push_back(lastWTypeVerb);
+	neuralNetworkInput.push_back(lastWTypeAdjective);
+	neuralNetworkInput.push_back(lastWTypeConjunction);
+	neuralNetworkInput.push_back(lastWTypePreposition);
+	neuralNetworkInput.push_back(lastWTypeArticle);
+
+	neuralNetworkInput.push_back(indicatesNoun);
+	neuralNetworkInput.push_back(indicatesVerb);
+	neuralNetworkInput.push_back(indicatesAdjective);
+
+	neuralNetworkInput.push_back(afterNoun);
+	neuralNetworkInput.push_back(afterVerb);
+	neuralNetworkInput.push_back(afterAdjective);
+	neuralNetworkInput.push_back(afterConjunction);
+	neuralNetworkInput.push_back(afterPreposition);
+	neuralNetworkInput.push_back(afterArticle);
+	
+	neuralNetworkInput.push_back(afterCallerNoun);
+	neuralNetworkInput.push_back(afterCallerVerb);
+	neuralNetworkInput.push_back(afterCallerAdjective);
+	neuralNetworkInput.push_back(afterCallerConjunction);
+	neuralNetworkInput.push_back(afterCallerPreposition);
+	neuralNetworkInput.push_back(afterCallerArticle);
+
+	neuralNetworkInput.push_back(nounPossible);
+	neuralNetworkInput.push_back(verbPossible);
+	neuralNetworkInput.push_back(adjectivePossible);
+
+	neuralNetworkInput.push_back(nounEnding);
+	neuralNetworkInput.push_back(verbEnding);
+	neuralNetworkInput.push_back(adjectiveEnding);
+
+	nn.process(neuralNetworkInput);
 }
 
 void PredictionEngine::filterExamples() {
