@@ -233,6 +233,10 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	double backBlockConjunction = 0;
 	double backBlockPreposition = 0;
 
+	//what blocks there are
+	double hasNounBlock = 0;
+	double hasVerbBlock = 0;
+
 	//ALL BLOCK STUFF
 	{
 		int wordBlock = -1;
@@ -291,33 +295,13 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 				backBlockPreposition = 1;
 			}
 		}
+
+		//has blocks
+		hasNounBlock = vectorContains(typeBlocks.key, POS::Noun);
+		hasNounBlock = vectorContains(typeBlocks.key, POS::Verb);
 	}
 
 	vector<SStructure> possibleStructure = master->matchPossibleSS(wtype);
-	SStructure structure = master->findStructurePercision(wtype);
-
-	//ALL STRUCTURE STUFF
-	//what the struture says comes next
-	double predictNounSS = 0;
-	double predictVerbSS = 0;
-	double predictAdjectiveSS = 0;
-
-	if (structure.component.size() > 1) {
-		//predictNounSS
-		{
-			POS type = structure.component.at(targetWordIndex);
-			if (type == POS::Noun) {
-				predictNounSS = 1;
-			}
-			else if (type == POS::Adjective) {
-				predictAdjectiveSS = 1;
-			}
-			else if (type == POS::Verb) {
-				predictVerbSS = 1;
-			}
-		}
-
-	}
 
 	//LAST WORD
 	//the type of the word before
