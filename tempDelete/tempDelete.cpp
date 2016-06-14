@@ -16,10 +16,9 @@ int main()
 	master.engine = &engine;
 
 	engine.multipleMissing("a cat skids into a room"); //skids WORKS
-	engine.multipleMissing("dogs are crazy"); //dogs FINE
-	engine.multipleMissing("a cat skids into a room"); //skids WORKS
-	engine.multipleMissing("the imperials have the disadvantage"); //disadvantage
-	engine.multipleMissing("the opposition have the flag"); //flag
+	engine.multipleMissing("dogs are crazy"); //dogs FINE (tough one)
+	engine.multipleMissing("the imperials have the disadvantage"); //disadvantage WORKS
+	engine.multipleMissing("the opposition have the flag"); //flag //WORKS
 	//engine.multipleMissing("a cat skids into a church");
 	//engine.multipleMissing("can he leave");
 

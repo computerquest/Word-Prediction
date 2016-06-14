@@ -589,6 +589,8 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	else if (three > one && three > two) {
 		return POS::Adjective;
 	}
+
+	return POS::Unknown;
 }
 
 void PredictionEngine::filterExamples() {
