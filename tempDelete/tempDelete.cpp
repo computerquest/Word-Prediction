@@ -7,21 +7,20 @@ int main()
 	MasterResource* pMaster = &master;
 	//hidden layer numbers
 	vector<int> temprorary;
-	temprorary.push_back(2);
-	temprorary.push_back(2);
-	//temprorary.push_back(4);
+	temprorary.push_back(11);
 
-	PredictionEngine engine(38, temprorary, 3, pMaster);
+	PredictionEngine engine(43, temprorary, 3, pMaster);
 
 	master.engine = &engine;
+
+	engine.nn.train(10000);
 
 	engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	engine.multipleMissing("dogs are crazy"); //dogs FINE (tough one)
 	engine.multipleMissing("the imperials have the disadvantage"); //disadvantage WORKS
 	engine.multipleMissing("the opposition have the flag"); //flag //WORKS
-	//engine.multipleMissing("a cat skids into a church");
-	//engine.multipleMissing("can he leave");
 
+	//.15
 	/*need to find the structure for the double meaning words*/
 	/*good
 	engine.findTypeDeployment("dogs are crazy"); //dogs FINE
