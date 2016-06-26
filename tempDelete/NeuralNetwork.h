@@ -2,13 +2,10 @@
 //#include "Connection.h"
 #include "Neuron.h"
 #include <vector>
-#include <fstream>
-#include <string>
 #include "LinkedList.h"
 #include <iostream>
 #include<cstdlib>
 #include<ctime>
-#include <math.h>;
 using namespace std;
 
 class NeuralNetwork {
@@ -22,9 +19,6 @@ public:
 	LinkedList<vector<double>, vector<double>> trainingValues;
 
 	Neuron * findNeuron(double id);
-
-	void read();
-	void save();
 
 	void optimize(); 
 
@@ -47,9 +41,13 @@ public:
 	void  initializeNN(int input, vector<int> hidden, int output);
 
 	void addAllConnections();
+	LinkedList<vector<double>, vector<double>> limit(LinkedList<vector<double>, vector<double>> input, int amount);
+	double calcDifference(vector<double> one, vector<double> two);
 	double calcError(vector<double> desired);
+	LinkedList<vector<double>, vector<double>> staggerDesired(LinkedList<vector<double>, vector<double>> input);
+	LinkedList<vector<double>, vector<double>> tweakDesired(LinkedList<vector<double>, vector<double>> input);
 	double train(LinkedList<vector<double>, vector<double>> inputs);
-	double train(int end);
+	double train();
 
 	void autoPrune();
 	void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber);

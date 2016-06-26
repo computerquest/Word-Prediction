@@ -32,7 +32,12 @@ public:
 
 	void mergeTraining();
 
-	void createTrainingData();
+	LinkedList<vector<double>, vector<double>> createTrain(vector<Neuron> neurons, vector<vector<double>> desired);
+
+	void save();
+	void read();
+
+	void findType();
 
 	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
 
