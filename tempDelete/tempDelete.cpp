@@ -7,13 +7,14 @@ int main()
 	MasterResource* pMaster = &master;
 	//hidden layer numbers
 	vector<int> temprorary;
-	temprorary.push_back(2);
-	temprorary.push_back(2);
+	temprorary.push_back(11);
 	//temprorary.push_back(4);
 
 	PredictionEngine engine(38, temprorary, 3, pMaster);
 
 	master.engine = &engine;
+
+	engine.nn.train();
 
 	engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	engine.multipleMissing("dogs are crazy"); //dogs FINE (tough one)
