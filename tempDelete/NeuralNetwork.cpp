@@ -98,8 +98,9 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 				Connection *currentConnection = connection.at(a);
 				double weight = currentConnection->weight;
 				double input = (findNeuron(currentConnection->sendId))->value;
-				double change = derivitive * input * difference;
-				currentConnection->setWeight(weight - (.05*change));
+				double change = derivitive; //* solution * input;
+				double newWeight = weight - learningRate*change + momentum  * (weight - currentConnection->lastWeight);
+				currentConnection->setWeight(newWeight);
 			}
 		}
 	}
@@ -148,9 +149,9 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 					}
 				}
 
-				double change = derivitive * solution * input;
-
-				currentConnection->setWeight(weight - .05 * change);
+				double change = derivitive; //* solution * input;
+				double newWeight = weight - learningRate*change + momentum * (weight - currentConnection->lastWeight);
+				currentConnection->setWeight(newWeight);
 			}
 		}
 	}
@@ -182,8 +183,9 @@ void NeuralNetwork::fix(vector<double> desired) {
 				Connection *currentConnection = connection.at(a);
 				double weight = currentConnection->weight;
 				double input = (findNeuron(currentConnection->sendId))->value;
-				double change = derivitive * input * difference;
-				currentConnection->setWeight(weight - (.05*change));
+				double change = derivitive; //* solution * input;
+				double newWeight = weight - learningRate*change + momentum  * (currentConnection->changes + 1);
+				currentConnection->setWeight(newWeight);
 			}
 		}
 	}
@@ -232,15 +234,30 @@ void NeuralNetwork::fix(vector<double> desired) {
 					}
 				}
 
-				double change = derivitive * solution * input;
-
-				currentConnection->setWeight(weight - .05 * change);
+				double change = derivitive; //* solution * input;
+				double newWeight = weight - learningRate*change + momentum  * (currentConnection->changes + 1);
+				currentConnection->setWeight(newWeight);
 			}
 		}
 	}
 	process();
 
 	networkError = calcError(desired);
+}
+
+void NeuralNetwork::adjustConstants(double currentError, double lastError) {
+	double errorChange = currentError - lastError;
+
+	if (errorChange <= 0) {
+		learningRate += learningRate * .05;
+	}
+	else {
+		learningRate /= 2;
+
+		for (int i = 0; i < connections.size(); i++) {
+			connections.at(i)->weight = connections.at(i)->lastWeight;
+		}
+	}
 }
 
 double NeuralNetwork::calcNetInput(Neuron input) {
@@ -371,6 +388,10 @@ double NeuralNetwork::train(int end) {
 		}
 		networkError = error;
 		cout << "gen: " << s << " error: " << error << " change: " << error - lastError << " average: " << error / inputs.size() / neuralNetwork.at(neuralNetwork.size() - 1).size() << endl;
+
+		if (s > 1) {
+			adjustConstants(error, lastError);
+		}
 
 		if (error < smallestError) {
 			save();

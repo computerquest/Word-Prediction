@@ -9,6 +9,8 @@ void Connection::reciever(double id) {
 }
 
 void Connection::setWeight(double value) {
+	changes++;
+	lastWeight = weight;
 	weight = value;
 }
 double Connection::getWeight() {

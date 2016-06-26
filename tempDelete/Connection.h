@@ -7,6 +7,8 @@ public:
 	double weight;
 	double connectToID;
 	double sendId;
+	int changes = 0;
+	double lastWeight = 0;
 
 	Connection(double weight, double connectToID, double sendId);
 

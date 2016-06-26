@@ -13,7 +13,7 @@ int main()
 
 	master.engine = &engine;
 
-	engine.nn.train(10000);
+	engine.nn.train(500);
 
 	engine.multipleMissing("a cat skids into a room"); //skids WORKS
 	engine.multipleMissing("dogs are crazy"); //dogs FINE (tough one)

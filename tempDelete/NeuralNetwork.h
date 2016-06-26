@@ -17,6 +17,8 @@ public:
 	vector <Connection*> connections;
 	vector<double> currentInput;
 	double networkError = 0;
+	double learningRate = .5;
+	double momentum = .45;
 	LinkedList<vector<double>, vector<double>> trainingValues;
 
 	Neuron * findNeuron(double id);
@@ -39,6 +41,8 @@ public:
 	void fix(vector<double> desired);
 
 	double calcNetInput(Neuron input);
+
+	void adjustConstants(double currentError, double lastError);
 
 	void  initializeNN(int input, vector<int> hidden, int output);
 
