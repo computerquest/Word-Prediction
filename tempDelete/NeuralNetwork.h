@@ -24,6 +24,8 @@ public:
 
 	void reset();
 
+	void adjustLearningRate(double firstError, double lastError);
+
 	void process();
 	void process(vector<double> input);
 
@@ -36,18 +38,12 @@ public:
 
 	double calcNetInput(Neuron input);
 
-	void adjustConstants(double currentError, double lastError);
-
 	void  initializeNN(int input, vector<int> hidden, int output);
 
 	void addAllConnections();
-	LinkedList<vector<double>, vector<double>> limit(LinkedList<vector<double>, vector<double>> input, int amount);
-	double calcDifference(vector<double> one, vector<double> two);
 	double calcError(vector<double> desired);
-	LinkedList<vector<double>, vector<double>> staggerDesired(LinkedList<vector<double>, vector<double>> input);
-	LinkedList<vector<double>, vector<double>> tweakDesired(LinkedList<vector<double>, vector<double>> input);
 	double train(LinkedList<vector<double>, vector<double>> inputs);
-	double train();
+	double train(int maxEpoch);
 
 	void autoPrune();
 	void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber);

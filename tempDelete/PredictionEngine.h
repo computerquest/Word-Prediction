@@ -32,7 +32,7 @@ public:
 
 	void mergeTraining();
 
-	LinkedList<vector<double>, vector<double>> createTrain(vector<Neuron> neurons, vector<vector<double>> desired);
+	void createTraining();
 
 	void save();
 	void read();

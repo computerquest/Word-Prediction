@@ -10,6 +10,47 @@ PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, M
 	//read();
 }
 
+void PredictionEngine::createTraining() {
+	for (int i = 0; i < examples.size(); i++) {
+		vector<string> wordStrings = breakDownV(examples.at(i));
+		vector<POS> wtype;
+		for (int b = 0; b < wordStrings.size(); b++) {
+			wtype.push_back(master->findWord(wordStrings.at(i)).type);
+		}
+
+		for (int a = 0; a < wordStrings.size(); a++) {
+			if (wtype.at(a) != POS::Noun && wtype.at(a) != POS::Verb && wtype.at(a) != POS::Adjective) {
+				continue;
+			}
+			vector<POS> newWType = wtype;
+
+			newWType[a] = POS::Unknown;
+
+			findTypeDeployment(newWType, examples.at(i), a);
+
+			vector<double> desired;
+
+			if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
+				desired.push_back(1);
+				desired.push_back(-1);
+				desired.push_back(-1);
+			}
+			else if (master->findWord(wordStrings.at(a)).type == POS::Verb) {
+				desired.push_back(-1);
+				desired.push_back(1);
+				desired.push_back(-1);
+			}
+			else if (master->findWord(wordStrings.at(a)).type == POS::Adjective) {
+				desired.push_back(-1);
+				desired.push_back(-1);
+				desired.push_back(1);
+			}
+
+			training.add(nn.currentInput, desired);
+		}
+	}
+}
+
 void PredictionEngine::saveTraining() {
 	ofstream stream;
 	stream.open("trainingExamples.txt", ios::trunc);
@@ -45,27 +86,6 @@ void PredictionEngine::read() {
 		nn.connections.at(i)->weight = atof(temp.c_str());
 	}
 	stream.close();
-}
-
-LinkedList<vector<double>, vector<double>> PredictionEngine::createTrain(vector<Neuron> neurons, vector<vector<double>> desiredI) {
-	LinkedList<vector<double>, vector<double>> masterPrint;
-
-	for (int i = 0; i < neurons.size(); i++) {
-		vector<double> blueprint;
-		vector<double> desired = desiredI.at(i);
-
-		for (int a = 0; a < neurons.size(); a++) {
-			if (a == i) {
-				blueprint.push_back(1);
-			}
-
-			blueprint.push_back(0);
-		}
-
-		masterPrint.add(blueprint, desired);
-	}
-
-	return masterPrint;
 }
 
 void PredictionEngine::findType() {
@@ -558,7 +578,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	neuralNetworkInput.push_back(afterConjunction);
 	neuralNetworkInput.push_back(afterPreposition);
 	neuralNetworkInput.push_back(afterArticle);
-	
+
 	neuralNetworkInput.push_back(afterCallerNoun);
 	neuralNetworkInput.push_back(afterCallerVerb);
 	neuralNetworkInput.push_back(afterCallerAdjective);

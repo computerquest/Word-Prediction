@@ -120,7 +120,7 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 				double weight = currentConnection->weight;
 				double input = (findNeuron(currentConnection->sendId))->value;
 				double change = derivitive * input * difference;
-				currentConnection->setWeight(weight - (.5*change));
+				currentConnection->setWeight(weight - (learningRate*change) + (momentum * weight));
 			}
 		}
 	}
@@ -171,7 +171,7 @@ void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 
 				double change = derivitive * solution * input;
 
-				currentConnection->setWeight(weight - .5 * change);
+				currentConnection->setWeight(weight - learningRate * change + (momentum * weight));
 			}
 		}
 	}
@@ -217,7 +217,7 @@ void NeuralNetwork::fix(vector<double> desired) {
 				double weight = currentConnection->weight;
 				double input = (findNeuron(currentConnection->sendId))->value;
 				double change = derivitive * input * difference;
-				currentConnection->setWeight(weight - (.5*change));
+				currentConnection->setWeight(weight - (learningRate*change) + (momentum * weight));
 			}
 		}
 	}
@@ -268,7 +268,7 @@ void NeuralNetwork::fix(vector<double> desired) {
 
 				double change = derivitive * solution * input;
 
-				currentConnection->setWeight(weight - .5 * change);
+				currentConnection->setWeight(weight - learningRate * change + (momentum * weight));
 			}
 		}
 	}
@@ -415,14 +415,11 @@ double NeuralNetwork::train(LinkedList<vector<double>, vector<double>> inputs) {
 
 	return greatest;
 }
-double NeuralNetwork::train() {
+double NeuralNetwork::train(int maxEpoch) {
 	double lastError = 10000;
-	int strikeA = 3;
-	double greatest = 1000000000;
-	double hundredthError = 100000000;
 	LinkedList<vector<double>, vector<double>> inputs = trainingValues;
-
-	for (int s = 1; true; s++) {
+	double greatest = 10000;
+	for (int s = 1; s < maxEpoch+1; s++) {
 		double error = 0;
 		cout << "gen: " << s << endl;
 		for (int a = 0; a < inputs.size(); a++) {
@@ -433,32 +430,11 @@ double NeuralNetwork::train() {
 				lineError += .5 * pow(inputs.getValueI(a).at(i) - neuralNetwork.at(neuralNetwork.size() - 1).at(i).value, 2);
 			}
 			error += lineError;
-
-			cout << inputs.getValueI(a).at(0);
-			for (int i = 1; i < inputs.getValueI(a).size(); i++) {
-				cout << " " << inputs.getValueI(a).at(i);
-			}
-			cout << ": " << neuralNetwork.at(neuralNetwork.size() - 1).at(0).value << " ";
-			for (int i = 1; i < neuralNetwork.at(neuralNetwork.size() - 1).size(); i++) {
-				cout << neuralNetwork.at(neuralNetwork.size() - 1).at(i).value << " ";
-			}
-			cout << "lineError: " << lineError << endl;
 		}
 		networkError = error;
-		{
-			if (strikeA > 1 && error - lastError >= -.00001) {
-				strikeA--;
-			}
-			else if (strikeA <= 1) {
-				break;
-			}
-			else if (error - lastError <= -.0001) {
-				strikeA = 3;
-			}
-		}
 
-		if (hundredthError - error > -.0001 && s % 100 == 0) {
-			break;
+		if (s > 1) {
+			adjustLearningRate(error, lastError);
 		}
 
 		if (error < greatest) {
@@ -475,6 +451,17 @@ double NeuralNetwork::train() {
 	return greatest;
 }
 
+void NeuralNetwork::adjustLearningRate(double firstError, double lastError) {
+	double change = firstError - lastError;
+
+	if (change < 0) {
+		learningRate *= .05;
+	}
+	else {
+		learningRate / 2;
+	}
+}
+
 void NeuralNetwork::autoPrune() {
 	vector<int> hiddenLayers;
 
@@ -482,7 +469,7 @@ void NeuralNetwork::autoPrune() {
 		hiddenLayers.push_back(neuralNetwork.at(i).size());
 	}
 
-	double smallestError = train();
+	double smallestError = train(1000);
 
 	for (int i = 1; i < neuralNetwork.size() - 1; i++) {
 		cout << i << endl;
@@ -497,7 +484,7 @@ void NeuralNetwork::autoPrune() {
 			}
 
 			initializeNN(neuralNetwork.at(0).size(), newHiddenLayers, neuralNetwork.at(neuralNetwork.size() - 1).size());
-			double currentError = train();
+			double currentError = train(1000);
 
 			if (currentError < smallestError) {
 				cout << "dimesions: ";
@@ -577,142 +564,6 @@ double NeuralNetwork::calcTanh(double netInput)
 	return answer;
 }
 
-LinkedList<vector<double>, vector<double>> NeuralNetwork::tweakDesired(LinkedList<vector<double>, vector<double>> input) {
-	for (int i = 0; i < input.size(); i++) {
-		vector<double> currentKey = input.getKeyI(i);
-		vector<double> currentDesired = input.getValueI(i);
-
-		for (int a = i + 1; a < input.size(); a++) {
-			double difference = calcDifference(currentKey, input.getKeyI(a));
-			if (currentKey == input.getKeyI(a) || 1 >= difference && difference != -1223456789) {
-				vector<double> desired = input.getValueI(a);
-				if (desired == currentDesired) {
-					input.deleteIndex(a);
-				}
-				else {
-					vector<double> newDesired;
-					for (int b = 0; b < desired.size(); b++) {
-						newDesired.push_back(desired.at(b) > currentDesired.at(b) ? desired.at(b) : currentDesired.at(b));
-					}
-					input.deleteIndex(a);
-					input.changeValueI(i, newDesired);
-				}
-			}
-		}
-	}
-	return input;
-}
-
-LinkedList<vector<double>, vector<double>> NeuralNetwork::limit(LinkedList<vector<double>, vector<double>> input, int amount) {
-	LinkedList<vector<double>, vector<double>> answer;
-
-	int nUsed = 0;
-	int vUsed = 0;
-	int aUsed = 0;
-	int cUsed = 0;
-	int pUsed = 0;
-	int articleUsed = 0;
-
-	for (int i = 0; i < input.size(); i++) {
-		vector<double> desired = input.getValueI(i);
-		bool used = false;
-		int oneIndex = -1;
-
-		for (int a = 0; a < desired.size(); a++) {
-			if (desired.at(a) == 1 && oneIndex == -1) {
-				oneIndex = a;
-			}
-			else if (desired.at(a) == 1 && oneIndex != -1) {
-				used = true;
-				answer.add(input.getKeyI(i), input.getValueI(i));
-				break;
-			}
-		}
-
-		if (used == true) {
-			continue;
-		}
-
-		if (oneIndex == 0 && nUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			nUsed++;
-		}
-		else if (oneIndex == 1 && vUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			vUsed++;
-		}
-		else if (oneIndex == 2 && aUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			aUsed++;
-		}
-		else if (oneIndex == 3 && cUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			cUsed++;
-		}
-		else if (oneIndex == 4 && pUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			pUsed++;
-		}
-		else if (oneIndex == 5 && articleUsed < amount) {
-			answer.add(input.getKeyI(i), input.getValueI(i));
-			articleUsed++;
-		}
-	}
-
-	return answer;
-}
-LinkedList<vector<double>, vector<double>> NeuralNetwork::staggerDesired(LinkedList<vector<double>, vector<double>> input) {
-	LinkedList<vector<double>, vector<double>> answer;
-
-	LinkedList<vector<double>, bool> newInput;
-
-	for (int i = 0; i < input.size(); i++) {
-		newInput.add(input.getValueI(i), false);
-	}
-
-	while (newInput.containsV(false)) {
-		for (int a = 0; a < 6; a++) {
-			if ((input.size() - answer.size()) > 6) {
-				for (int i = 0; i < newInput.size(); i++) {
-					if (newInput.getValueI(i) == false) {
-						vector<double> currentDesired = newInput.getKeyI(i);
-						if (currentDesired.at(a) == 1) {
-							answer.add(input.getKeyI(i), currentDesired);
-							newInput.changeValueI(i, true);
-							break;
-						}
-					}
-				}
-			}
-			else {
-				for (int i = 0; i < newInput.size(); i++) {
-					if (newInput.getValueI(i) == false) {
-						answer.add(input.getKeyI(i), newInput.getKeyI(i));
-					}
-				}
-
-				return answer;
-			}
-		}
-	}
-
-	return answer;
-}
-double NeuralNetwork::calcDifference(vector<double> one, vector<double> two) {
-	double differences = 0;
-
-	for (int i = 0; i < two.size(); i++) {
-		if (two.at(i) != 1 & one.at(i) != 1) {
-			differences += one.at(i) - two.at(i);
-		}
-		else if (two.at(i) != one.at(i)){
-			return -1223456789;
-		}
-	}
-
-	return abs((differences / one.size()));
-}
-
 double NeuralNetwork::calcError(vector<double> desired) {
 	double error = 0;
 	for (int i = 0; i < desired.size(); i++) {
@@ -736,7 +587,7 @@ vector<Connection*> NeuralNetwork::getConnectionsFrom(Neuron neuron) {
 
 void NeuralNetwork::optimize() {
 	
-	train();
+	train(1000);
 
 	vector<int> hiddenSize;
 	for (int i = neuralNetwork.size()-2; i > 0; i--) {
@@ -747,7 +598,7 @@ void NeuralNetwork::optimize() {
 	for (int i = 0; i < hiddenSize.size(); i++) {
 		int direction = -1;
 		for (int gen = 0; true; gen++) {
-			train();
+			train(1000);
 
 			if (lastError >= networkError) {
 				hiddenSize.at(i) += direction;
