@@ -2,53 +2,13 @@
 #include "PredictionEngine.h"
 #include "MasterResource.h"
 
-PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource) {
+PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource, bool batch) {
 	std::cout << "new engine created" << endl;
 	master = resource;
-	nn.initializeNN(inputN, hidden, output);
+	nn.initialize(inputN, hidden, output, batch);
 	readTraining();
-	//read();
-}
-
-void PredictionEngine::createTraining() {
-	for (int i = 0; i < examples.size(); i++) {
-		vector<string> wordStrings = breakDownV(examples.at(i));
-		vector<POS> wtype;
-		for (int b = 0; b < wordStrings.size(); b++) {
-			wtype.push_back(master->findWord(wordStrings.at(i)).type);
-		}
-
-		for (int a = 0; a < wordStrings.size(); a++) {
-			if (wtype.at(a) != POS::Noun && wtype.at(a) != POS::Verb && wtype.at(a) != POS::Adjective) {
-				continue;
-			}
-			vector<POS> newWType = wtype;
-
-			newWType[a] = POS::Unknown;
-
-			findTypeDeployment(newWType, examples.at(i), a);
-
-			vector<double> desired;
-
-			if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
-				desired.push_back(1);
-				desired.push_back(-1);
-				desired.push_back(-1);
-			}
-			else if (master->findWord(wordStrings.at(a)).type == POS::Verb) {
-				desired.push_back(-1);
-				desired.push_back(1);
-				desired.push_back(-1);
-			}
-			else if (master->findWord(wordStrings.at(a)).type == POS::Adjective) {
-				desired.push_back(-1);
-				desired.push_back(-1);
-				desired.push_back(1);
-			}
-
-			training.add(nn.currentInput, desired);
-		}
-	}
+	createTraining();
+	nn.read();
 }
 
 void PredictionEngine::saveTraining() {
@@ -69,190 +29,213 @@ void PredictionEngine::readTraining() {
 	}
 }
 
-void PredictionEngine::save() {
-	ofstream stream;
-	stream.open("weights.txt", ios::trunc);
+void PredictionEngine::createTraining() {
+	for (int i = 0; i < examples.size(); i++) {
+		vector<string> wordStrings = breakDownV(examples.at(i));
+		vector<POS> wtype;
 
-	for (int a = 0; a < nn.connections.size(); a++) {
-		stream << nn.connections.at(a)->weight << endl;
+		for (int a = 0; a < wordStrings.size(); a++) {
+			cout << wordStrings.at(a) << endl;
+			wtype.push_back(master->findWord(wordStrings.at(a)).type);
+		}
+
+		for (int b = 0; b < wordStrings.size(); b++) {
+			if (wtype.at(b) != POS::Noun && wtype.at(b) != POS::Verb && wtype.at(b) != POS::Adjective) {
+				continue;
+			}
+
+			vector<POS> newWType = wtype;
+			newWType[b] = POS::Unknown;
+
+			vector<double> desired;
+
+			if (wtype.at(b) == POS::Noun) {
+				desired.push_back(1);
+				desired.push_back(-1);
+				desired.push_back(-1);
+			}
+			else if (wtype.at(b) == POS::Verb) {
+				desired.push_back(-1);
+				desired.push_back(1);
+				desired.push_back(-1);
+			}
+			else if (wtype.at(b) == POS::Adjective) {
+				desired.push_back(-1);
+				desired.push_back(-1);
+				desired.push_back(1);
+			}
+
+			findTypeDeployment(newWType, examples.at(i), b);
+			training.add(nn.currentInput, desired);
+		}
 	}
-	stream.close();
+
+	nn.trainingValues = training;
 }
-void PredictionEngine::read() {
-	ifstream stream;
-	stream.open("weights.txt");
-	string temp;
-	for (int i = 0; i < nn.connections.size() && std::getline(stream, temp); i++) {
-		nn.connections.at(i)->weight = atof(temp.c_str());
-	}
-	stream.close();
-}
 
-void PredictionEngine::findType() {
-	double lastError = 1000000000;
-	double error = 0;
-	int strike = 3;
-	int generation = 0;
-	int smallest = 1000000;
-	int total = 0;
-
-	while (true) {
-		total = 0;
-		generation++;
-
-		for (int i = 0; i < examples.size(); i++) {
-			vector<string> wordStrings = breakDownV(examples.at(i));
-
-			for (int a = 0; a < wordStrings.size(); a++) {
-				bool badOne = false;
-
-				//did the wierd condition because if it set it to negative one normally it returns false
-				for (int secondMissing = -1; secondMissing + 1 < wordStrings.size() + 1; secondMissing++) {
-					if (secondMissing == a) {
-						continue;
-					}
-
-					vector<POS> wtype;
-					for (int b = 0; b < wordStrings.size(); b++) {
-						POS type = master->findWord(wordStrings.at(b)).type;
-
-						if (b == a || b == secondMissing) {
-							if (type != POS::Noun && type != POS::Verb && type != POS::Adjective && b != secondMissing) {
-								badOne = true;
-							}
-
-							wtype.push_back(POS::Unknown);
-							continue;
-						}
-
-						wtype.push_back(type);
-					}
-
-					if (badOne == true) {
-						continue;
-					}
-
-					bool aUsed = false;
-
-					for (int findI = 0; findI < 2; findI++) {
-						POS newType;
-						if (secondMissing == -1 & aUsed == false | aUsed == false & a < secondMissing) {
-							newType = findTypeDeployment(wtype, examples.at(i), a);
-							aUsed = true;
-							wtype.at(a) = newType;
-							total++;
-						}
-						else if (secondMissing > -1 && aUsed == true | secondMissing < a) {
-							newType = findTypeDeployment(wtype, examples.at(i), secondMissing);
-							wtype.at(secondMissing) = newType;
-							total++;
-						}
-
-						vector<Neuron> neurons = nn.neuralNetwork.at(0);
-						vector<double> desired;
-
-						double nounV = neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value + neurons.at(4).value
-							+ neurons.at(6).value + neurons.at(27).value + neurons.at(13).value + neurons.at(14).value + neurons.at(17).value + neurons.at(16).value
-							+ neurons.at(15).value;
-
-						double verbV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value +
-							neurons.at(4).value + neurons.at(6).value + neurons.at(28).value + (neurons.at(1).value == 0 ? neurons.at(1).value : 0) + neurons.at(12).value
-							+ neurons.at(14).value + neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
-
-						double adjectiveV = neurons.at(0).value + neurons.at(1).value + neurons.at(2).value + neurons.at(3).value + neurons.at(5).value
-							+ neurons.at(4).value + neurons.at(6).value + neurons.at(29).value + neurons.at(13).value + neurons.at(12).value + neurons.at(14).value
-							+ neurons.at(17).value + neurons.at(16).value + neurons.at(15).value;
-
-						double total = nounV + verbV + adjectiveV > 0 ? nounV + verbV + adjectiveV : -1;
-
-						if (master->findWord(wordStrings.at(a)).type == POS::Noun) {
-							desired.push_back(1);
-							desired.push_back((verbV / total) - 1);
-							desired.push_back((adjectiveV / total) - 1);
-						}
-						else if (master->findWord(wordStrings.at(a)).type == POS::Verb) {
-							desired.push_back((nounV / total) - 1);
-							desired.push_back(1);
-							desired.push_back((adjectiveV / total) - 1);
-						}
-						else if (master->findWord(wordStrings.at(a)).type == POS::Adjective) {
-							desired.push_back((nounV / total) - 1);
-							desired.push_back((verbV / total) - 1);
-							desired.push_back(1);
-						}
-
-						training.add(nn.currentInput, desired);
-						nn.fix(desired);
-						error += nn.networkError;
-					}
-				}
-			}
-		}
-
-		std::cout << endl;
-		std::cout << "Generation: " << generation << " Error: " << error << " Change: " << error - lastError;
-
-		if (total > 0) {
-			std::cout << " Average: " << (error / 3 / total) << endl;
-		}
-		if (error - lastError > -.00001) {
-			if (strike > 0) {
-				strike--;
-			}
-			else {
-				break;
-			}
-		}
-		else if (error - lastError < -.0001) {
-			strike = 3;
-		}
-
-		if (error < smallest) {
-			smallest = error;
-		}
-		lastError = error;
-	}
-
-	if (total > 0) {
-		std::cout << "Smallest: " << smallest << " Average: " << (smallest / 3 / total) << " Total: " << total << endl;
-	}
-} //can call find type deployment from method and add loop
-
+//31 32 33
 POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int targetWordIndex) {
 	vector<string> wordStrings = breakDownV(phrase);
 	LinkedList<POS, int> typeBlocks;
 	POS lastPOS = POS::Unknown;
 	vector<double> neuralNetworkInput; //thought about making pointer but would have to modify nn class
 
-	//creates POS blocks
+									   //creates POS blocks
+
+									   //run fat cat | run quickly jared
+	POS lastSignificantPOS = POS::Unknown;
 	for (int i = 0; i < wtype.size(); i++) {
-		//check if it is a definitive word
-		if (wtype.at(i) == POS::Verb | wtype.at(i) == POS::Noun | wtype.at(i) == POS::Preposition | wtype.at(i) == POS::Conjuction) {
-			if (lastPOS == POS::Preposition | lastPOS == POS::Verb | lastPOS == POS::Conjuction) {
-				typeBlocks.add(wtype.at(i), i);
-				typeBlocks.add(lastPOS != POS::Unknown ? lastPOS : wtype.at(i), i - 1);
+		POS type = wtype.at(i);
+
+		if (type == POS::Conjuction | type == POS::Preposition | type == POS::Adjective) {
+			if (lastSignificantPOS != POS::Unknown) {
+				typeBlocks.add(lastSignificantPOS, i - 1);
+			}
+
+			typeBlocks.add(type, i);
+
+			lastSignificantPOS = POS::Unknown;
+		}
+		else if (type == POS::Verb | type == POS::Noun | type == POS::Article) {
+			if (type == POS::Noun & lastSignificantPOS == POS::Noun) {
 				continue;
 			}
 
-			typeBlocks.add(lastPOS != POS::Unknown ? lastPOS : wtype.at(i), i - 1);
-			lastPOS = wtype.at(i);
+			if (lastSignificantPOS != POS::Unknown) {
+				typeBlocks.add(lastSignificantPOS, i - 1);
+			}
+
+			lastSignificantPOS = type == POS::Article ? POS::Noun : type;
 		}
 	}
 
+	if (lastSignificantPOS != POS::Unknown) {
+		typeBlocks.add(lastSignificantPOS, wtype.size() - 1);
+	}
+
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		if (i > 0 && type == POS::Adjective) {
+			POS secondary = typeBlocks.getKeyI(i - 1);
+
+			if (secondary == POS::Adjective) {
+				typeBlocks.changeValueI(i, typeBlocks.getValueI(i - 1));
+			}
+		}
+	}
+
+	//find prep phrases
+	for (int i = 0; i + 1 < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		POS secondary = typeBlocks.getKeyI(i + 1);
+		if (type == POS::Preposition && secondary == POS::Noun) {
+			typeBlocks.changeValueI(i, typeBlocks.getValueI(i + 1));
+			typeBlocks.deleteIndex(i + 1);
+		}
+	}
+
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		if (type == POS::Adjective) {
+			if (i > 0) {
+				int beginning = typeBlocks.getValueI(i - 1);
+				int end = typeBlocks.getValueI(i);
+
+				bool changed = false;
+
+				POS newType = POS::Noun;
+				for (int b = beginning; b <= end; b++) {
+					if (wordStrings.at(b).find("ly") == std::string::npos) {
+						newType = POS::Verb;
+
+						if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+							typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+							typeBlocks.deleteIndex(i);
+							changed = true;
+						}
+						else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+							typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+							typeBlocks.deleteIndex(i);
+							changed = true;
+						}
+
+						break;
+					}
+				}
+
+				if (changed == false) {
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Noun) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Noun) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+				}
+
+				int iterations = 0;
+				while (changed == false && iterations < 3) {
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Noun) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Noun) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+
+					iterations++;
+				}
+			}
+		}
+		else if (type == POS::Preposition) {
+			if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+				typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+				typeBlocks.deleteIndex(i);
+			}
+			else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+				typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+				typeBlocks.deleteIndex(i);
+			}
+		}
+	}
+	/*
+	only if there is a verb before a noun and there is no article is a adjective part of a verb block (becomes adverb but don't want to add)
+	*/
 	//does it fall within noun block
 	double nounBlock = 0;
+	double verbBlock = 0;
+	double prepositionBlock = 0;
+	double adjectiveBlock = 0;
 
 	//what block is in front
 	double frontBlockNoun = 0;
 	double frontBlockVerb = 0;
 	double frontBlockConjunction = 0;
 	double frontBlockPreposition = 0;
+	double frontBlockAdjective = 0;
 
 	//what block is in back
 	double backBlockNoun = 0;
 	double backBlockVerb = 0;
 	double backBlockConjunction = 0;
 	double backBlockPreposition = 0;
+	double backBlockAdjective = 0;
 
 	//what blocks there are
 	double hasNounBlock = 0;
@@ -276,6 +259,15 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 				if (typeBlocks.getKeyI(i) == POS::Noun) {
 					nounBlock = 1;
 				}
+				else if (typeBlocks.getKeyI(i) == POS::Verb) {
+					verbBlock = 1;
+				}
+				else if (typeBlocks.getKeyI(i) == POS::Adjective) {
+					adjectiveBlock = 1;
+				}
+				else if (typeBlocks.getKeyI(i) == POS::Preposition) {
+					prepositionBlock = 1;
+				}
 
 				break;
 			}
@@ -297,6 +289,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			else if (type == POS::Preposition) {
 				frontBlockPreposition = 1;
 			}
+			else if (type == POS::Adjective) {
+				frontBlockAdjective = 1;
+			}
 		}
 
 		//back blocks
@@ -314,6 +309,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			}
 			else if (type == POS::Preposition) {
 				backBlockPreposition = 1;
+			}
+			else if (type == POS::Adjective) {
+				backBlockAdjective = 1;
 			}
 		}
 
@@ -431,10 +429,12 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		Word afterWord = master->findWord(wordStrings.at(targetWordIndex + 1));
 		LinkedList<double, POS> wordCall;
 		for (int i = 0; i < master->ngramML.size(); i++) {
-			NGram<Word> currentNGram = master->ngramML.at(i);
+			for (int a = 0; a < master->ngramML.getValueI(i).size(); a++) {
+				NGram<Word> currentNGram = master->ngramML.getValueI(i).at(a);
 
-			if (currentNGram.content.containsV(afterWord)) {
-				wordCall.add(currentNGram.content.getKeyV(afterWord), currentNGram.subject.type);
+				if (currentNGram.content.containsV(afterWord)) {
+					wordCall.add(currentNGram.content.getKeyV(afterWord), currentNGram.subject.type);
+				}
 			}
 		}
 
@@ -470,9 +470,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		total = nounUsed + verbUsed + adjectiveUsed + conjunctionUsed + prepositionUsed + articleUsed;
 
 		//creates the ratio
-		afterCallerNoun = nounUsed / total;
-		afterCallerVerb = verbUsed / total;
-		afterCallerAdjective = adjectiveUsed / total;
+		afterCallerNoun = nounUsed / (total == 0 ? 1 : total);
+		afterCallerVerb = verbUsed / (total == 0 ? 1 : total);
+		afterCallerAdjective = adjectiveUsed / (total == 0 ? 1 : total);
 	}
 
 	//POSSIBLE STRUCTURE
@@ -500,9 +500,17 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			}
 		}
 		double total = nounOccerence + verbOccerence + adjectiveOccerence;
-		nounPossible = nounOccerence / total;
-		verbPossible = verbOccerence / total;
-		adjectivePossible = adjectiveOccerence / total;
+
+		if (total == 0) {
+			nounPossible = 0;
+			verbPossible = 0;
+			adjectivePossible = 0;
+		}
+		else {
+			nounPossible = nounOccerence / total;
+			verbPossible = verbOccerence / total;
+			adjectivePossible = adjectiveOccerence / total;
+		}
 	}
 
 	//ENDING
@@ -546,35 +554,40 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	}
 
 	//38 of them
-	neuralNetworkInput.push_back(nounBlock);
+	neuralNetworkInput.push_back(nounBlock);		//0
+	neuralNetworkInput.push_back(verbBlock);
+	neuralNetworkInput.push_back(adjectiveBlock);
+	neuralNetworkInput.push_back(prepositionBlock);
 
 	neuralNetworkInput.push_back(frontBlockNoun);
 	neuralNetworkInput.push_back(frontBlockVerb);
+	neuralNetworkInput.push_back(frontBlockAdjective);		//1
 	neuralNetworkInput.push_back(frontBlockConjunction);
 	neuralNetworkInput.push_back(frontBlockPreposition);
 
 	neuralNetworkInput.push_back(backBlockNoun);
 	neuralNetworkInput.push_back(backBlockVerb);
-	neuralNetworkInput.push_back(backBlockConjunction);
+	neuralNetworkInput.push_back(backBlockAdjective);
+	neuralNetworkInput.push_back(backBlockConjunction);		//1
 	neuralNetworkInput.push_back(backBlockPreposition);
 
-	neuralNetworkInput.push_back(hasNounBlock);
+	neuralNetworkInput.push_back(hasNounBlock);		//0
 	neuralNetworkInput.push_back(hasVerbBlock);
 
 	neuralNetworkInput.push_back(lastWTypeNoun);
 	neuralNetworkInput.push_back(lastWTypeVerb);
 	neuralNetworkInput.push_back(lastWTypeAdjective);
-	neuralNetworkInput.push_back(lastWTypeConjunction);
+	neuralNetworkInput.push_back(lastWTypeConjunction);		//1
 	neuralNetworkInput.push_back(lastWTypePreposition);
 	neuralNetworkInput.push_back(lastWTypeArticle);
 
 	neuralNetworkInput.push_back(indicatesNoun);
-	neuralNetworkInput.push_back(indicatesVerb);
+	neuralNetworkInput.push_back(indicatesVerb);		//3
 	neuralNetworkInput.push_back(indicatesAdjective);
 
 	neuralNetworkInput.push_back(afterNoun);
 	neuralNetworkInput.push_back(afterVerb);
-	neuralNetworkInput.push_back(afterAdjective);
+	neuralNetworkInput.push_back(afterAdjective);		//1
 	neuralNetworkInput.push_back(afterConjunction);
 	neuralNetworkInput.push_back(afterPreposition);
 	neuralNetworkInput.push_back(afterArticle);
@@ -582,17 +595,24 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	neuralNetworkInput.push_back(afterCallerNoun);
 	neuralNetworkInput.push_back(afterCallerVerb);
 	neuralNetworkInput.push_back(afterCallerAdjective);
-	neuralNetworkInput.push_back(afterCallerConjunction);
+	neuralNetworkInput.push_back(afterCallerConjunction);		//1
 	neuralNetworkInput.push_back(afterCallerPreposition);
-	neuralNetworkInput.push_back(afterCallerArticle);
+	neuralNetworkInput.push_back(afterCallerArticle); //*
 
-	neuralNetworkInput.push_back(nounPossible);
-	neuralNetworkInput.push_back(verbPossible);
-	neuralNetworkInput.push_back(adjectivePossible);
+	neuralNetworkInput.push_back(nounPossible); //*
+	neuralNetworkInput.push_back(verbPossible); //*		//3
+	neuralNetworkInput.push_back(adjectivePossible); //*
 
 	neuralNetworkInput.push_back(nounEnding);
-	neuralNetworkInput.push_back(verbEnding);
+	neuralNetworkInput.push_back(verbEnding);		//0
 	neuralNetworkInput.push_back(adjectiveEnding);
+
+	double totalNodesUsed = 0;
+	for (int i = 0; i < neuralNetworkInput.size(); i++) {
+		if (neuralNetworkInput.at(i) != 0) {
+			totalNodesUsed++;
+		}
+	}
 
 	nn.process(neuralNetworkInput);
 
@@ -627,27 +647,6 @@ void PredictionEngine::filterExamples() {
 	saveTraining();
 }
 
-void PredictionEngine::generateData(int amount) {
-	srand(time(0));
-	for (int i = 0; i < amount; i++) {
-		int current = (std::rand() % (master->ngramML.size() - 1));
-		NGram<Word>* currentWord = &master->ngramML.at(current);
-
-		while (true) {
-			int x = (std::rand() % (master->ngramML.size() - 1));
-			Word currentWordProp = master->ngramML.at(x).subject;
-
-			if (currentWord->subject.type != currentWordProp.type && currentWord->subject.name != currentWordProp.name) {
-				currentWord->addItem(currentWordProp);
-				currentWord->updateItem(currentWordProp, (int)(rand() % 15) + 1);
-				break;
-			}
-		}
-	}
-
-	master->saveNGram();
-}
-
 vector<POS> PredictionEngine::multipleMissing(string phrase) {
 	vector<string> wordStrings = breakDownV(phrase);
 	vector<POS> wordTypes;
@@ -659,7 +658,7 @@ vector<POS> PredictionEngine::multipleMissing(string phrase) {
 			flagged.push_back(i);
 			wordTypes.push_back(POS::Unknown);
 		}
-		else if (master->wordExist(wordStrings.at(i))) {
+		else if (master->wordExistAll(wordStrings.at(i))) {
 			wordTypes.push_back(master->findWord(wordStrings.at(i)).type);
 		}
 		else {
@@ -709,7 +708,7 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 			flagged.push_back(i);
 			wordTypes.push_back(POS::Unknown);
 		}
-		else if (master->wordExist(wordStrings.at(i))) {
+		else if (master->wordExistAll(wordStrings.at(i))) {
 			wordTypes.push_back(master->findWord(wordStrings.at(i)).type);
 		}
 		else {
@@ -749,35 +748,38 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 	return newPOS;
 }
 
-void PredictionEngine::mergeTraining() {
-	for (int i = 0; i < training.size(); i++) {
-		vector<double> currentInput = training.getKeyI(i);
+void PredictionEngine::mergeTesting(string phrase) {
+	cout << "Phrase: " << phrase << endl;
+	vector<string> wordStrings = breakDownV(phrase);
+	vector<POS> wtype;
 
-		for (int a = 0; a < training.size(); a++) {
-			if (i == a) {
-				continue;
-			}
-			vector<double> secondaryInput = training.getKeyI(a);
-			bool similar = true;
+	for (int i = 0; i < wordStrings.size(); i++) {
+		wtype.push_back(master->findWord(wordStrings.at(i)).type);
+	}
 
-			for (int c = 0; c < secondaryInput.size(); c++) {
-				if (secondaryInput.at(c) == 0 & currentInput.at(c) == 1 || secondaryInput.at(c) == 1 & currentInput.at(c) == 1) {
-					similar = false;
-					break;
-				}
-			}
-
-			if (similar == false) {
-				continue;
-			}
-
-			vector<double> currentDesired = training.getValueI(i);
-			vector<double> secondaryDesired = training.getValueI(a);
-			for (int c = 0; c < currentDesired.size(); c++) {
-				currentDesired.at(c) = currentDesired.at(c) >= secondaryDesired.at(c) ? currentDesired.at(c) : secondaryDesired.at(c);
-			}
-
-			training.deleteIndex(a);
+	for (int i = 0; i < wordStrings.size(); i++) {
+		if (wtype.at(i) != POS::Verb && wtype.at(i) != POS::Adjective && wtype.at(i) != POS::Noun) {
+			continue;
 		}
+
+		findTypeDeployment(wtype, phrase, i);
+
+		double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
+		double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
+		double three = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(2).value;
+
+		POS type;
+
+		if (one >= two && one >= three ) {
+			type = POS::Noun;
+		}
+		else if (two > one && two > three) {
+			type = POS::Verb;
+		}
+		else if (three > one && three > two) {
+			type = POS::Adjective;
+		}
+
+		cout << wordStrings.at(i) << ": " << POStoString(type) << " Actual: " << POStoString(wtype.at(i)) << endl;
 	}
 }

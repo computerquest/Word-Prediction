@@ -15,7 +15,7 @@ using namespace std;
 class MasterResource;
 class PredictionEngine {
 public:
-	NeuralNetwork nn;
+	NeuralNetwork nn;///////
 	LinkedList<vector<double>, vector<double>> training;
 	vector<string> examples;
 	NeuralNetwork predictNN;

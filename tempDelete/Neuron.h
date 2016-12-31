@@ -7,17 +7,14 @@ using namespace std;
 class Neuron {
 public:
 	double value;
-	double id;
-	static double idValue;
-	vector<Connection> connection;
-
+	int id;
+	static int idValue;
+	bool activationFunction;
+	double influence;
+	//
 	Neuron();
 
-	Neuron(double value);
+	Neuron(int value);
 
 	void setValue(double input);
-
-	void addConnection(double weight, Neuron neuron);
-
-	void addConnection(vector<double> weights, vector<Neuron> layer);
-};
+};////
