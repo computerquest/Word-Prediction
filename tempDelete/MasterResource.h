@@ -6,16 +6,17 @@
 #include "POS.h"
 #include "Word.h"
 #include "SStructure.h" 
-#include "NGram.h"
+#include "NGram.h"//
+#include <algorithm>
 #include "BreakDown.h"
 #include <fstream>
 using namespace std;
-
+//
 class PredictionEngine;
 
 class MasterResource {
 public:
-	vector<NGram<Word>> ngramML;
+	LinkedList<int , vector<NGram<Word>>> ngramML;
 	vector<NGram<SStructure>> sNGramML;
 	LinkedList<int, Word> probationWord;
 	LinkedList<int, SStructure> probationSS;
@@ -53,8 +54,13 @@ public:
 	NGram<Word> findNGram(Word word);
 	NGram<Word>* findNGramP(Word word);
 
+	NGram<Word> findInFile(string search, int file);
+	POS decypherType(string secondType);
+
 	////////////////////////////////////////////////////////////////exist
 	bool sstructureExist(vector<POS> order);
+
+	bool wordExistAll(string word);
 
 	bool probationExistWord(string word);
 	bool probationExistSS(vector<POS> input);
@@ -62,6 +68,7 @@ public:
 	bool wordExist(string word);
 
 	bool ngramExist(Word word);
+	bool ngramExist(string word);
 
 	////////////////////////////////////////////////////////////////////////misc
 	void updateNGram(Word input, int newOccerence);

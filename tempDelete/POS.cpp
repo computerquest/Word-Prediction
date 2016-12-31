@@ -27,7 +27,7 @@ POS toType(string type) {
 
 string POStoString(POS typeInput) {
 	if (typeInput == POS::Noun) {
-		return "noun";
+		return "noun";//
 	}
 	else if (typeInput == POS::Verb) {
 		return "verb";

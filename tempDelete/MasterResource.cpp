@@ -1,13 +1,15 @@
-#pragma once
 #include "MasterResource.h"
 #include "PredictionEngine.h"
 
+/*
+all the find position k and exist is taking up a lot more time than it was
+*/
 MasterResource::MasterResource() {
-	readNGram();
+	//readNGram();
 	readProbationSS();
 	readProbationWord();
 	readStruct();
-	cout << "new mr" << endl;
+	std::cout << "new mr" << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////FILE
@@ -32,6 +34,10 @@ vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> d
 				}
 			}
 		}
+		if (line != "") {
+			thisLine.push_back(line);
+		}
+
 		answer.push_back(thisLine);
 	}
 
@@ -182,7 +188,7 @@ void MasterResource::readStruct() {
 
 /////////////////////////////////////////ngram
 void MasterResource::saveNGram() {
-	ofstream stream;
+	/*ofstream stream;
 	stream.open("NGrams.txt", ios::trunc);
 
 	for (int i = 0; i < ngramML.size(); i++) {
@@ -197,9 +203,40 @@ void MasterResource::saveNGram() {
 		stream << "|" << endl;
 	}
 
-	stream.close();
+	stream.close();*/
+	LinkedList<int, vector<string>> fileInput;
+	for (int i = 0; i < ngramML.size(); i++) {
+		vector<string> tempVector;
+		for (int a = 0; a < ngramML.getValueI(i).size(); a++) {
+			NGram<Word> currentNGram = ngramML.getValueI(i).at(a);
+			string allContent = "";
+			string subject = currentNGram.subject.name;
+
+			allContent += subject + "," + POStoString(currentNGram.subject.type) + "|";
+			for (int a = 0; a < currentNGram.content.size(); a++) {
+				allContent += to_string(currentNGram.content.getKeyI(a)) + "," + currentNGram.content.getValueI(a).name + "," + POStoString(currentNGram.content.getValueI(a).type) + "|";
+			}
+
+			tempVector.push_back(allContent);
+		}
+
+		fileInput.add(ngramML.getKeyI(i), tempVector);
+	}
+
+
+	for (int i = 0; i < fileInput.size(); i++) {
+		ofstream stream;
+		stream.open(to_string(fileInput.getKeyI(i)) + ".txt", ios::trunc);
+
+		for (int a = 0; a < fileInput.getValueI(i).size(); a++) {
+			stream << fileInput.getValueI(i).at(a) << endl;
+		}
+
+		stream.close();
+	}
 }
-void MasterResource::readNGram() {
+
+/*void MasterResource::readNGram() {
 	vector<char> delimeter;
 	delimeter.push_back(',');
 	delimeter.push_back('|');
@@ -230,6 +267,178 @@ void MasterResource::readNGram() {
 		//content not being set
 		NGram<Word>* ngram = findNGramP(currentWord);
 		ngram->content = currentContent;
+	}
+}*/
+
+void MasterResource::readNGram() {
+	vector<char> delimeter;
+	delimeter.push_back('|');
+
+	vector<vector<string>> input = fileInput("NGrams.txt", delimeter);
+
+	std::cout << "creating words" << endl;
+
+	/*//creates all the words
+	for (int i = 0; i < input.size(); i++) {
+	std::cout << "Line: " << i << endl;
+	bool cancelAll = false;
+	for (int a = 1; a < 3; a++) {
+	if (!ngramExist(input.at(i).at(a))) {
+	Word newWord = createWord(input.at(i).at(a), input.at(i).at(a+2));
+
+	if (newWord.type == POS::Unknown) {
+	cancelAll = true;
+	}
+	}
+	}
+
+	if (cancelAll == true) {
+	continue;
+	}
+	NGram<Word>* ngram = findNGramP(findWord(input.at(i).at(1)));
+	ngram->content.add(stoi(input.at(i).at(0)), findWord(input.at(i).at(2)));
+	}*/
+
+	LinkedList<int, LinkedList<string, string>> data;
+	for (int i = 0; i < input.size(); i++) {
+		cout << i << endl;
+		POS type;
+		POS type1;
+
+		if ((type = decypherType(input.at(i).at(3))) == POS::Unknown | (type1 = decypherType(input.at(i).at(4))) == POS::Unknown) {
+			continue;
+		}
+
+		string name = input.at(i).at(1);// +";" + POStoString(type) + "|";
+
+		int value = 0;
+		for (int a = 0; a < name.length(); a++) {
+			value += name[a];
+		}
+
+		if (data.containsK(value)) {
+			int valueIndex = data.getPostionK(value);
+
+			if (data.getValueI(valueIndex).containsK(name)) {
+				int nameIndex = data.getValueI(valueIndex).getPostionK(name);
+				LinkedList<string, string> dataValue = data.getValueI(valueIndex);
+
+				string newInfo = input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
+				dataValue.changeValueI(nameIndex, data.getValueI(valueIndex).getValueI(nameIndex) + newInfo);
+
+				data.changeValueI(valueIndex, dataValue);
+			}
+			else {
+				string newInfo = name + "|" + POStoString(type) + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
+				LinkedList<string, string> dataValue = data.getValueI(valueIndex);
+
+				dataValue.add(name, newInfo);
+				data.changeValueI(valueIndex, dataValue);
+			}
+		}
+		else {
+			string newInfo = name + "|" + POStoString(type) + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
+			LinkedList<string, string> newLL;
+
+			newLL.add(name, newInfo);
+			data.add(value, newLL);
+		}
+	}
+
+	cout << "writing" << endl;
+
+	for (int i = 0; i < data.size(); i++) {
+		ofstream stream;
+		stream.open(to_string(data.getKeyI(i)) + ".txt", ios::trunc);
+
+		for (int a = 0; a < data.getValueI(i).size(); a++) {
+			stream << data.getValueI(i).getValueI(a) << endl;
+		}
+
+		stream.close();
+	}
+}
+
+//want to reformat file so the word is on its own line and then only read those single words 
+//will make it so that we don't need to breakdown these huge things --MAYBE
+//not that expensive for file size
+
+/*
+could also have a directory for words with name and file and line number
+then just go to the file and loop through to get to the line number
+*/
+NGram<Word> MasterResource::findInFile(string search, int file) {
+	vector<char> delimeter;
+	delimeter.push_back('|');
+	vector<vector<string>> input = fileInput(to_string(file) + ".txt", delimeter);
+
+	for (int i = 0; i < input.size(); i++) {
+		if (input.at(i).at(0) == search) {
+			vector<string> currentVector = input.at(i);
+			Word tempWord(currentVector.at(0), toType(currentVector.at(1)));
+			NGram<Word> newNGram(tempWord);
+
+			delimeter[0] = ',';
+
+			for (int a = 2; a < currentVector.size(); a++) {
+				vector<string> secondaryVector = breakDownV(currentVector.at(a), delimeter);
+
+				for (int b = 0; b < secondaryVector.size(); b++) {
+					Word secondaryTempWord(secondaryVector.at(1), toType(secondaryVector.at(2)));
+
+					newNGram.content.add(stoi(secondaryVector.at(0)), secondaryTempWord);
+				}
+			}
+
+			if (ngramML.containsK(file)) {
+				vector<NGram<Word>> temp;
+				for (int c = 0; c < ngramML.getValueK(file).size(); c++) {
+					temp.push_back(ngramML.getValueK(file).at(c));
+				}
+
+				temp.push_back(newNGram);
+
+				ngramML.changeValueK(file, temp);
+			}
+			else {
+				vector<NGram<Word>> temp;
+				temp.push_back(newNGram);
+				ngramML.add(file, temp);
+			}
+
+			return newNGram;
+		}
+	}
+}
+POS MasterResource::decypherType(string secondType) {
+	if (secondType.find("np") != std::string::npos | secondType.find("nn") != std::string::npos | secondType == "appge" |
+		secondType.find("pn") != std::string::npos | secondType.find("pp") != std::string::npos |
+		secondType.find("nd") != std::string::npos | secondType.find("z") != std::string::npos) {
+		return POS::Noun;
+	}
+	else if (secondType.find("at") != std::string::npos) {
+		return POS::Article;
+	}
+	else if (secondType.find("cs") != std::string::npos | secondType.find("cc") != std::string::npos | secondType == "bcl") {
+		return POS::Conjuction;
+	}
+	else if (secondType.find("da") != std::string::npos | secondType == "to" | secondType.find("i") != std::string::npos |
+		secondType.find("dd") != std::string::npos | secondType.find("db") != std::string::npos) {
+		return POS::Preposition;
+	}
+
+	else if (secondType.find("j") != std::string::npos |
+		secondType.find("r") != std::string::npos & secondType.find("b") == std::string::npos | secondType.find("x") != std::string::npos) {
+		return POS::Adjective;
+	}
+	else if (secondType.find("v") != std::string::npos) {
+		return POS::Verb;
+	}
+	else //if (secondType == "fu" | secondType == "ge" | secondType == "fw" | secondType == "fo" | secondType.find("f") != std::string::npos |
+		 //secondType == "ex" | secondType.find("m") != std::string::npos & secondType.find("r") == std::string::npos |
+		 //secondType.find("uh") != std::string::npos) 
+	{
+		return POS::Unknown;
 	}
 }
 
@@ -292,6 +501,18 @@ void MasterResource::readProbationSS() {
 	}
 }
 
+bool MasterResource::wordExistAll(string word) {
+	if (!wordExist(word)) {
+		int value = 0;
+		for (int i = 0; i < word.length(); i++) {
+			value += word[i];
+		}
+
+		return findInFile(word, value).subject.type != POS::Unknown ? true : false;
+	}
+
+	return wordExist(word);
+}
 ////////////////////////////////////////////////////////////////////////////////FIND
 vector<POS> MasterResource::findAllWordType(string input) {
 	vector<string> wordS = breakDownV(input);
@@ -317,10 +538,18 @@ vector<POS> MasterResource::findAllWordType(string input) {
 
 	return answer;
 }
-Word MasterResource::findWord(string word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject.name == word) {
-			return ngramML.at(i).subject;
+Word MasterResource::findWord(string word)
+{
+	int wordSum = stringToInt(word);
+	if (!wordExist(word)) {
+		return findInFile(word, wordSum).subject;
+	}
+
+	int kPos = ngramML.getPostionK(wordSum);
+	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
+		if (ngramML.getValueI(kPos).at(i).subject.name == word) {
+			Word temp = ngramML.getValueI(kPos).at(i).subject;
+			return temp;
 		}
 	}
 }
@@ -445,20 +674,35 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 			}
 		}
 	}
-}
+}//
 
 ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject == word) {
-			return ngramML.at(i);
+	//return *findNGramP(word); for some reason didn't work
+	int value = stringToInt(word.name);
+
+	if (!ngramExist(word)) {
+		findInFile(word.name, value);
+	}
+
+	int kPos = ngramML.getPostionK(value);
+	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
+		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
+			return ngramML.getValueI(kPos).at(i);
 		}
 	}
 }
 NGram<Word>* MasterResource::findNGramP(Word word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject == word) {
-			return &ngramML.at(i);
+	int value = stringToInt(word.name);
+
+	if (!ngramExist(word)) {
+		findInFile(word.name, value);
+	}
+
+	int kPos = ngramML.getPostionK(value);
+	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
+		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
+			return &ngramML.getValueI(kPos).at(i);
 		}
 	}
 }
@@ -472,21 +716,24 @@ Word MasterResource::findProbationWord(string word) {
 
 ////////////////////////////////////////////////////////////////EXIST
 bool MasterResource::wordExist(string word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject.name == word) {
-			return true;
+	int value = stringToInt(word);
+	if (ngramML.containsK(value)) {
+		int pos = ngramML.getPostionK(value);
+		for (int i = 0; i < ngramML.getValueI(pos).size(); i++) {
+			if (ngramML.getValueI(pos).at(i).subject.name == word) {
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
 bool MasterResource::ngramExist(Word word) {
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject == word) {
-			return true;
-		}
-	}
-	return false;
+	return wordExist(word.name);
+}
+
+bool MasterResource::ngramExist(string word) {
+	return wordExist(word);
 }
 
 bool MasterResource::sstructureExist(vector<POS> order) {
@@ -497,7 +744,7 @@ bool MasterResource::sstructureExist(vector<POS> order) {
 	}
 
 	return false;
-} 
+}
 
 ////////////////////////////////////probation
 bool MasterResource::probationExistWord(string word) {
@@ -537,7 +784,16 @@ void MasterResource::findNew(string phrase) {
 					NGram<Word> newNGram;
 					newNGram.subject = newWord;
 
-					ngramML.push_back(newNGram);
+					int value = stringToInt(newNGram.subject.name);
+					if (ngramML.containsK(value)) {
+						ngramML.getValueK(value).push_back(newNGram);
+					}
+					else {
+						vector<NGram<Word>> temp;
+						temp.push_back(newNGram);
+
+						ngramML.add(value, temp);
+					}
 					probationWord.deleteIndex(probationWord.getPostionV(newWord));
 				}
 			}
@@ -556,12 +812,14 @@ void MasterResource::updateNGram(Word input, int newOccerence) {
 
 //////////////////////////////////////////////////////////////////////////DOUBLE
 bool MasterResource::isDouble(string word) {
+	int value = stringToInt(word);
 	bool count = false;
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (word == ngramML.at(i).subject.name && count == false) {
+	int kPos = ngramML.getPostionK(value);
+	for (int i = 0; i < ngramML.getValueI(value).size(); i++) {
+		if (word == ngramML.getValueI(kPos).at(i).subject.name && count == false) {
 			count = true;
 		}
-		else if (count == true && word == ngramML.at(i).subject.name) {
+		else if (count == true && word == ngramML.getValueI(kPos).at(i).subject.name) {
 			return true;
 		}
 	}
@@ -570,10 +828,13 @@ bool MasterResource::isDouble(string word) {
 }
 vector<POS> MasterResource::doublePossibilities(string word) {
 	vector<POS> answer;
-	for (int i = 0; i < ngramML.size(); i++) {
-		if (ngramML.at(i).subject.name == word) {
-			answer.push_back(ngramML.at(i).subject.type);
+	int value = stringToInt(word);
+	int kPos = ngramML.getPostionK(value);
+	for (int i = 0; i < ngramML.getValueI(value).size(); i++) {
+		if (word == ngramML.getValueI(kPos).at(i).subject.name) {
+			answer.push_back(ngramML.getValueI(value).at(i).subject.type);
 		}
+
 	}
 
 	return answer;
@@ -599,7 +860,7 @@ POS MasterResource::findDouble(string phrase, string target) {
 
 	for (int i = 0; i < possible.size(); i++) {
 		if (possible.at(i) == type) {
-			cout << POStoString(type) << endl;
+			std::cout << POStoString(type) << endl;
 			return possible.at(i);
 		}
 	}

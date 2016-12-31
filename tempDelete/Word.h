@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "POS.h"
+#include "BreakDown.h"
 using namespace std;
 
 class Word {
@@ -9,7 +10,7 @@ public:
 	POS type;
 
 	bool operator==(Word leftside);
-
+	//
 	bool operator==(string leftside);
 
 	Word();
@@ -24,6 +25,8 @@ public:
 	string getWord();
 
 	POS getType();
+
+	int wordValue();
 };
 
 

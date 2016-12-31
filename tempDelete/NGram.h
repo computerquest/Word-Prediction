@@ -10,7 +10,7 @@ public:
 	LinkedList<int, T> content;
 
 	NGram() {}
-
+	//
 	NGram(T subject) : subject(subject) {}
 
 	void setSubject(T target) {
@@ -41,4 +41,10 @@ public:
 	void updateItem(T item, int adjust) {
 		content.changeKeyV(item, adjust);
 	}
+
+	/*~NGram() {
+		delete subject;
+		delete occerence;
+		delete content;
+	}*/
 };

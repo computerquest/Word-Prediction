@@ -4,27 +4,17 @@ using namespace std;
 
 Neuron::Neuron() {
 	id = idValue;
-	idValue += .0001;
+	idValue++;
 }
 
-Neuron::Neuron(double value) : value(value) {
+Neuron::Neuron(int value) : value(value) {
 	id = idValue;
-	idValue += .0001;
+	idValue++;
 }
 
 void Neuron::setValue(double input) {
 	value = input;
 }
+int Neuron::idValue = 0;
 
-void Neuron::addConnection(double weight, Neuron neuron) {
-	Connection newConnection(weight, neuron.id, id);
-	connection.push_back(newConnection);
-}
-
-void Neuron::addConnection(vector<double> weights, vector<Neuron> layer) {
-	for (int i = 0; i < layer.size(); i++) {
-		addConnection(weights.at(i), layer.at(i));
-	}
-}
-double Neuron::idValue = 0;
-
+//

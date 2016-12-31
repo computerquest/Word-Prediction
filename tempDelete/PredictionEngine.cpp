@@ -8,7 +8,7 @@ PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, M
 	nn.initialize(inputN, hidden, output, batch);
 	readTraining();
 	createTraining();
-	nn.read();
+	//nn.read();
 }
 
 void PredictionEngine::saveTraining() {
@@ -198,7 +198,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 						typeBlocks.deleteIndex(i);
 						changed = true;
 					}
-
+					
 					iterations++;
 				}
 			}
@@ -357,7 +357,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			lastWTypeArticle = 1;
 		}
 
-		NGram<Word> lastWordNGram = master->findNGram(master->findWord(wordStrings.at(targetWordIndex - 1)));
+		//CHECK FIND NGRAM
+		Word w = master->findWord(wordStrings.at(targetWordIndex - 1));
+		NGram<Word> lastWordNGram = master->findNGram(w);//
 		LinkedList<int, Word> usedWords = lastWordNGram.content;
 
 		double usedNouns = 0;
@@ -382,9 +384,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 
 		total = usedNouns + usedVerbs + usedAdjectives + total;
 
-		indicatesNoun = usedNouns / total;
-		indicatesVerb = usedVerbs / total;
-		indicatesAdjective = usedAdjectives / total;
+		indicatesNoun = usedNouns / (total == 0? 1: total);
+		indicatesVerb = usedVerbs / (total == 0 ? 1 : total);
+		indicatesAdjective = usedAdjectives / (total == 0 ? 1 : total);
 	}
 
 	//THE WORD AFTER

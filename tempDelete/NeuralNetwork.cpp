@@ -8,7 +8,7 @@ NeuralNetwork::NeuralNetwork() {
 	networkError = -1;
 	fileExtension = 'a';
 }
-
+//
 Neuron* NeuralNetwork::findNeuron(int id) {
 	/*int indexId = round(10000 * id);
 
@@ -45,13 +45,20 @@ Neuron* NeuralNetwork::findNeuron(int id) {
 	}
 }
 
+void NeuralNetwork::setInput(vector<double> input)
+{
+	for (int i = 0; i < neuralNetwork.at(0).size(); i++) {
+		neuralNetwork.at(0).at(i).setValue(input.at(i));
+	}
+}
+
 void NeuralNetwork::reset() {
 	for (int i = 0; i < neuralNetwork.at(0).size(); i++) {
 		(neuralNetwork.at(0).at(i)).value = 0;
 	}
 }
 
-void NeuralNetwork::process() {
+/*void NeuralNetwork::process() {
 	for (int i = 0; i < neuralNetwork.size(); i++) {
 		neuralNetwork.at(0).at(i).setValue(currentInput.at(i));
 	}
@@ -90,22 +97,28 @@ void NeuralNetwork::process(vector<double> input) {
 			}
 		}
 	}
-}
+}*/
 
 //the connections it is recieving
-vector<Connection*> NeuralNetwork::getConnections(Neuron neuron) {
+vector<Connection*> NeuralNetwork::getConnectionsTo(int id) {
 	vector<Connection*> answer;
 
-	for (int i = 0; i < masterConnection.size(); i++) {
-		if (neuron.id == masterConnection.at(i).connectToID) {
-			answer.push_back(&masterConnection.at(i));
+	int layer = 0;
+	for (int i = 0; i < neuralNetwork.size(); i++) {
+		if (id > neuralNetwork.at(i).at(neuralNetwork.at(i).size() - 1).id) {
+			layer++;
 		}
+	}
+
+	int posNum = id - neuralNetwork.at(layer).at(0).id;
+	for (int i = 0; i < neuralNetwork.at(layer - 1).size(); i++) {
+		answer.push_back((getConnectionsFrom(neuralNetwork.at(layer - 1).at(i).id).at(posNum)));
 	}
 
 	return answer;
 }
 
-void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
+/*void NeuralNetwork::fix(vector<double> inputs, vector<double> desired) {
 	//loop for each output node
 
 	//this sets the beginning values
@@ -213,14 +226,7 @@ void NeuralNetwork::fix(vector<double> desired) {
 	num = 3;
 	4-3 = 1
 	all ways has to be -1 to make it 0 based
-	*/
-
-	/*
-	for(int d= 2; neuralNetwork.size()-d > 0; d++) {
-	vector<Neuron*> currentStuff = neuralNetwork.getValue(neuralNetwork.size - d);
-
-	for (int b = 0; b < currentStuff.size(); b++) {
-	*/
+	
 
 	for (int z = 2; neuralNetwork.size() - z > 0; z++) {
 		vector<Neuron>* currentStuff = &neuralNetwork.at(neuralNetwork.size() - z);
@@ -256,11 +262,11 @@ void NeuralNetwork::fix(vector<double> desired) {
 		}
 	}
 	process();
-}
+}*/
 
-double NeuralNetwork::calcNetInput(Neuron input) {
+double NeuralNetwork::calcNetInput(int id) {
 	double answer = 0;
-	vector<Connection*> connections = getConnections(input);
+	vector<Connection*> connections = getConnectionsTo(id);
 
 	for (int i = 0; i < connections.size(); i++) {
 		answer += connections.at(i)->weight * findNeuron(connections.at(i)->sendId)->value;
@@ -279,7 +285,7 @@ double NeuralNetwork::calcNetInput(vector<Connection> connect) {
 }
 
 //equal to the amount you put in
-void  NeuralNetwork::initializeNN(int input, vector<int> hidden, int output, bool batchI) {
+/*void  NeuralNetwork::initializeNN(int input, vector<int> hidden, int output, bool batchI) {
 	batch = batchI;
 	neuralNetwork.clear();
 	masterConnection.clear();
@@ -329,7 +335,7 @@ void  NeuralNetwork::initializeNN(int input, vector<int> hidden, int output, boo
 			break;
 		}
 	}
-}
+}*/
 
 double NeuralNetwork::tanhDerivative(double x) {
 	double answer = 1 - (pow(calcTanh(x), 2));
@@ -352,7 +358,7 @@ double NeuralNetwork::sech(double x) {
 	return answer;
 }
 
-double NeuralNetwork::train(LinkedList<vector<double>, vector<double>> inputs) {
+/*double NeuralNetwork::train(LinkedList<vector<double>, vector<double>> inputs) {
 	double lastError = 10000;
 	double smallestError = 10000;
 	for (int s = 1; s < 1001; s++) {
@@ -660,7 +666,7 @@ void NeuralNetwork::autoPrune(LinkedList<vector<double>, vector<double>> input, 
 	cout << "smallest: " << smallestError << endl;
 
 	initializeNN(neuralNetwork.at(0).size() - 1, hiddenLayers, neuralNetwork.at(neuralNetwork.size() - 1).size(), true);
-}
+}*/
 
 double NeuralNetwork::calcSigmoid(double netInput) {
 	double e = 1 / pow(2.71, netInput);
@@ -679,28 +685,23 @@ double NeuralNetwork::calcError(vector<double> desired) {
 	return error;
 }
 
-vector<Connection*> NeuralNetwork::getConnectionsFrom(Neuron neuron) {
-	vector<Connection*> solution;
-	
-	for (int i = 0; i < masterConnection.size(); i++) {
-		if (masterConnection.at(i).sendId == neuron.id) {
-			solution.push_back(&masterConnection.at(i));
-		}
+vector<Connection*> NeuralNetwork::getConnectionsFrom(int id) {
+	vector<Connection*> answer;
+
+	for (int i = 0; i < masterConnection.at(id).size(); i++) {
+		answer.push_back(&masterConnection.at(id).at(i));
 	}
 
-	return solution;
+	return answer;
 }
 
-Connection* NeuralNetwork::findConnection(Neuron from, Neuron to)
+Connection* NeuralNetwork::findConnection(int from, int to)
 {
-	for (int i = 0; i < masterConnection.size(); i++) {
-		if (from.id == masterConnection.at(i).sendId && to.id == masterConnection.at(i).connectToID) {
-			return &(masterConnection.at(i));
-		}
-	}
+	vector<Connection*> fromConnect = getConnectionsFrom(from);
+	return fromConnect.at(to-fromConnect.at(0)->connectToID);
 }
 
-void NeuralNetwork::optimize() {
+/*void NeuralNetwork::optimize() {
 	vector<int> hiddenSize;
 	for (int i = 1; i < neuralNetwork.size() - 1; i++) {
 		hiddenSize.push_back(neuralNetwork.at(i).size());
@@ -743,14 +744,16 @@ void NeuralNetwork::optimize() {
 	for (int i = 0; i < hiddenSize.size(); i++) {
 		cout << hiddenSize.at(i) << " ";
 	}
-}
+}*/
 
 void NeuralNetwork::save() {
 	ofstream stream;
 	stream.open("weights.txt", ios::trunc);
 
 	for (int a = 0; a < masterConnection.size(); a++) {
-		stream << masterConnection.at(a).weight << endl;
+		for (int i = 0; i < masterConnection.at(a).size(); i++) {
+			stream << masterConnection.at(a).at(i).weight << endl;
+		}
 	}
 	stream.close();
 }
@@ -758,12 +761,14 @@ void NeuralNetwork::read() {
 	ifstream stream;
 	stream.open("weights.txt");
 	string temp;
-	for (int i = 0; i < masterConnection.size() && std::getline(stream, temp); i++) {
-		masterConnection.at(i).weight = atof(temp.c_str());
+	for (int i = 0; i < masterConnection.size(); i++) {
+		for (int b = 0; b < masterConnection.at(i).size() && std::getline(stream, temp); b++) {
+			masterConnection.at(i).at(b).weight = atof(temp.c_str());
+		}
 	}
 	stream.close();
 }
-void NeuralNetwork::adjustLearningRate(double* firstError, double lastError) {
+/*void NeuralNetwork::adjustLearningRate(double* firstError, double lastError) {
 	double change = *firstError - lastError;
 
 	if (change < 0) {
@@ -783,4 +788,4 @@ void NeuralNetwork::adjustLearningRate(double* firstError, double lastError) {
 	}
 
 	cout << "learning rate: " << learningRate << endl;
-}
+}*/

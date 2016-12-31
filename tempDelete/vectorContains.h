@@ -9,4 +9,4 @@ template<typename T> bool vectorContains(vector<T> input, T check) {
 	}
 
 	return false;
-}
+}//

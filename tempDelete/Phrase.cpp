@@ -23,7 +23,7 @@ bool Phrase::contains(Word word) {
 		if (wordsW.at(i) == word) {
 			return true;
 		}
-	}
+	}//
 
 	return false;
 }

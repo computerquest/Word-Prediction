@@ -5,12 +5,15 @@ using namespace std;
 class Connection {
 public:
 	double weight;
-	double connectToID;
-	double sendId;
+	int connectToID;
+	int sendId;
+	double epochWeight;
+	double lastWeight;
+	double nextWeight;//
 
-	Connection(double weight, double connectToID, double sendId);
+	Connection(double weight, int connectToID, int sendId);
 
-	void reciever(double id);
+	void reciever(int id);
 
 	void setWeight(double value);
 	double getWeight();

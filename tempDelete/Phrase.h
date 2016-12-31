@@ -12,7 +12,7 @@ using namespace std;
 class MasterResource;
 class Phrase {
 public:
-	SStructure structure;
+	SStructure structure;//
 	string phrase;
 	vector<Word> wordsW;
 	vector<POS> wordPOS;
@@ -26,4 +26,5 @@ public:
 	bool contains(string word);
 
 	bool operator==(string rightside);
+
 };

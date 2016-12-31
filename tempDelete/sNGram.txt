@@ -18,3 +18,6 @@ article|noun|verb|article|noun|-3,noun|preposition|preposition|verb|noun|preposi
 verb|noun|verb|adjective|-9,noun|adjective|verb|preposition|verb|noun|-2,article|noun|verb|preposition|article|noun|-2,verb|adjective|noun|-11,noun|adjective|verb|article|noun|-10,noun|verb|adjective|
 adjective|noun|verb|adjective|-10,article|noun|verb|preposition|noun|-7,noun|adjective|article|adjective|noun|-5,noun|adjective|verb|preposition|verb|noun|
 noun|verb|adjective|article|noun|
+noun|verb|article|noun|verb|noun|preposition|article|noun|
+noun|verb|article|noun|verb|adjective|
+noun|verb|preposition|noun|

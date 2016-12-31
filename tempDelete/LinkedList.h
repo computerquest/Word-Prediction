@@ -2,6 +2,7 @@
 #include <vector>
 using namespace std;
 
+//MAY HAVE ISSUES BECAUSE YOU ARE USING RETURNING A VALUE WHEN ACCESSING INSTEAD OF A POINTER
 template<typename K, typename V> class LinkedList {
 public:
 	vector<K> key;
@@ -16,6 +17,16 @@ public:
 
 		return false;
 	}
+	bool containsK(K input) {
+		for (int i = 0; i < key.size(); i++) {
+			if (key.at(i) == input) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	void filterAmountV(V type, int input) {
 		int amount = 0;
 		for (int i = 0; i < value.size(); i++) {
@@ -25,8 +36,8 @@ public:
 					deleteIndex(i);
 				}
 			}
-		}
-	}
+		}//
+	}//
 
 	void filterAmountK(K type, int input) {
 		int amount = 0;
@@ -64,7 +75,7 @@ public:
 	void findDuplicates() {
 		filterDuplicatesK();
 		filterDuplicatesV();
-	}
+	} 
 	/////////////////////////////////////////////delete//////////////////////////////////////
 	void deleteIndex(int input) {
 		//key.earse(key.begin() + i);
@@ -87,52 +98,44 @@ public:
 
 	///////////////////////////////////////////////////position//////////////////////////
 	int getPostionK(K search) {
-		int answer = 0;
 		for (int i = 0; i < key.size(); i++) {
 			if (key.at(i) == search) {
-				answer = i;
-				break;
+				return i;
 			}
 		}
 
-		return answer;
+		return -1;;
 	}
 
 	int getPostionV(V search) {
-		int answer = 0;
 		for (int i = 0; i < value.size(); i++) {
 			if (value.at(i) == search) {
-				answer = i;
-				break;
+				return i;
 			}
 		}
 
-		return answer;
+		return -1;
 	}
 
 	/////////////////////////////////////////////////change/////////////////////////////////////
 	void changeKeyV(V search, K change) {
 		int index = getPostionV(search);
 
-		key.insert(key.begin() + index, change);
-		key.erase(key.begin() + index + 1);
+		key[index] = change;
 	}
 
 	void changeKeyI(int i, K change) {
-		key.insert(key.begin() + i, change);
-		key.erase(key.begin() + i + 1);
+		key[i] = change;
 	}
 
 	void changeValueK(K search, V change) {
 		int index = getPostionK(search);
 
-		value.insert(value.begin() + index, change);
-		value.erase(value.begin() + index + 1);
+		value[index] = change;
 	}
 
 	void changeValueI(int i, V change) {
-		value.insert(value.begin() + i, change);
-		value.erase(value.begin() + i + 1);
+		value[i] = change;
 	}
 
 	void changeAll(int i, K changeK, V changeV) {
@@ -181,4 +184,9 @@ public:
 		value.push_back(addValue);
 		key.push_back(addKey);
 	}
+
+	/*~LinkedList() {
+		delete key;
+		delete value;
+	}*/
 };

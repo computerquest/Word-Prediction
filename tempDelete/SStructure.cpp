@@ -16,10 +16,10 @@ bool SStructure::operator==(SStructure rightside) {
 			}
 		}
 		return true;
-	}
+	}//
 	else {
 		return false;
-	}
+	}//
 }
 
 void SStructure::addItem(POS type) {
@@ -28,7 +28,7 @@ void SStructure::addItem(POS type) {
 
 void SStructure::addItems(vector<POS> input) {
 	component = input;
-}
+}//
 
 vector<string> SStructure::structToString() {
 	vector<string> answer;

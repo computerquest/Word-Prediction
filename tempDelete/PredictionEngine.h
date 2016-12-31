@@ -4,7 +4,7 @@
 #include "LinkedList.h"
 #include "POS.h"
 #include "vectorContains.h"
-#include "NeuralNetwork.h"
+#include "MLP.h"
 #include "NGram.h"
 #include "SStructure.h"
 #include "BreakDown.h"
@@ -15,33 +15,37 @@ using namespace std;
 class MasterResource;
 class PredictionEngine {
 public:
-	NeuralNetwork nn;///////
+	MLP nn;
 	LinkedList<vector<double>, vector<double>> training;
 	vector<string> examples;
-	NeuralNetwork predictNN;
+	MLP predictNN;
 	MasterResource* master;
 	vector<POS> lastPhraseGlobal;
 
-	PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource);
+	//PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource);
 
 	vector<POS> multipleMissing(string phrase);
 	vector<POS> multipleMissingTraining(string phrase);
 
+	void mergeTesting(string phrase);
+
+	PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource * resource, bool batch);
+
 	void saveTraining();
 	void readTraining();
 
-	void mergeTraining();
+	//void mergeTraining();
 
 	void createTraining();
 
-	void save();
-	void read();
+	//void save();
+	//void read();
 
-	void findType();
+	//void findType();
 
 	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
 
 	void filterExamples();
 
-	void generateData(int amount);
+	//void generateData(int amount);
 }; //class end 

@@ -2,9 +2,13 @@
 #include "Connection.h"
 using namespace std;
 
-Connection::Connection(double weight, double connectToID, double sendId) : weight(weight), connectToID(connectToID), sendId(sendId) {}
-
-void Connection::reciever(double id) {
+Connection::Connection(double weight, int connectToID, int sendId) : weight(weight), connectToID(connectToID), sendId(sendId) {
+	epochWeight = weight;
+	lastWeight = weight;
+	nextWeight = 0;
+}
+//
+void Connection::reciever(int id) {
 	connectToID = id;
 }
 

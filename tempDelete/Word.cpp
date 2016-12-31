@@ -41,3 +41,8 @@ string  Word::getWord() {
 POS  Word::getType() {
 	return type;
 }
+
+int Word::wordValue()
+{
+	return stringToInt(name);
+}
