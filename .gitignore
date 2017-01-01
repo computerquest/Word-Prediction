@@ -12,6 +12,7 @@
 *.VC.opendb
 *.VC.db
 *.txt
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
