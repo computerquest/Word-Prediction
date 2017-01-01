@@ -7,12 +7,12 @@
 #include "MLP.h"
 #include "NGram.h"
 #include "SStructure.h"
+#include "MasterResource.h"
 #include "BreakDown.h"
 #include "Word.h"
 #include <fstream>
 using namespace std;
 
-class MasterResource;
 class PredictionEngine {
 public:
 	MLP nn;

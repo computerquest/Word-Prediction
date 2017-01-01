@@ -27,36 +27,6 @@ void defaultTest() {
 	m.train(10000, "stuff");
 }
 
-//this most likely isnt a fiar test case because it is based on nothing
-void randomTest() {
-	MLP m;
-	vector<int> hM;
-	m.learningRate = .5;
-	hM.push_back(4);
-	hM.push_back(2);
-	m.initialize(2, hM, 1, false);
-	LinkedList<vector<double>, vector<double>> mInput;
-	vector<double> in;
-	in.push_back(0);
-	in.push_back(0);
-
-	vector<double> inA;
-	inA.push_back(0);
-	inA.push_back(1);
-
-	vector<double> out;
-	out.push_back(0);
-
-	vector<double> outA;
-	outA.push_back(1);
-
-	mInput.add(in, out);
-	mInput.add(inA, outA);
-	
-	m.trainingValues = mInput;
-	m.train(10000, "testing");
-}
-
 void applicationTest() {
 	MasterResource master;
 	MasterResource* pMaster = &master;
@@ -107,7 +77,6 @@ void practicalTest() {
 int main()
 {
 	applicationTest();
-
 	cout << "end" << endl;
 	return 0;
 }
