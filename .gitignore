@@ -74,7 +74,7 @@ _Chutzpah*
 ipch/
 *.aps
 *.ncb
-*.opendb
+*opendb
 *.opensdf
 *.sdf
 *.cachefile
@@ -211,5 +211,4 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
-/tempDelete/116.txt
 *.txt

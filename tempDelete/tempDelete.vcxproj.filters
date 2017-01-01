@@ -63,10 +63,10 @@
     <ClInclude Include="vectorContains.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MLP.h">
+    <ClInclude Include="RBM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RBM.h">
+    <ClInclude Include="MLP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
