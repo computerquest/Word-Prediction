@@ -9,9 +9,9 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-*.txt
+*.VC.opendb
 *.VC.db
-
+*.txt
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -76,7 +76,6 @@ _Chutzpah*
 ipch/
 *.aps
 *.ncb
-*.VC.opendb
 *.opensdf
 *.sdf
 *.cachefile
