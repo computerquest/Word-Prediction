@@ -6,12 +6,12 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.txt
+*.VC.db
+*.VC.opendb
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-*.VC.db
-*.VC.opendb
-*.txt
 
 # Build results
 [Dd]ebug/
