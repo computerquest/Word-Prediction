@@ -12,7 +12,7 @@ public:
 	SStructure(vector<POS> input);
 
 	bool operator==(SStructure rightside);
-	//
+	
 	void addItem(POS type);
 
 	void addItems(vector<POS> input);

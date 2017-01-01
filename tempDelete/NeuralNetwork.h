@@ -29,37 +29,20 @@ public:
 
 	void save();
 	void read();
-	//void optimize(); 
-	//
+
 	void setInput(vector<double> input);
 
 	void reset();
-
-	//void adjustLearningRate(double* firstError, double lastError);
-
-	//virtual void process();
-	//virtual void process(vector<double> input);
 
 	vector<Connection*> getConnectionsTo(int id);
 	vector<Connection*> getConnectionsFrom(int id);
 	Connection* findConnection(int from, int to);
 
-	//virtual void fix(vector<double> inputs, vector<double> desired);
-
-	//virtual void fix(vector<double> desired);
-
 	double calcNetInput(int id);
 	double calcNetInput(vector<Connection> connection);
-	//void  initializeNN(int input, vector<int> hidden, int output, bool momentum);
 
 	double calcError(vector<double> desired);
-	//virtual double train(LinkedList<vector<double>, vector<double>> inputs);
-	////virtual double train(int maxEpoch);
-	//virtual double train(int maxEpoch, string extension);
 
-	//void autoPrune();
-	//void autoPrune(int max, string extension);
-	//void autoPrune(LinkedList<vector<double>, vector<double>> input, int layerNumber);
 	double calcSigmoid(double netInput);
 	double caclSigmoidDerivative(double x);
 	double calcTanh(double netInput);

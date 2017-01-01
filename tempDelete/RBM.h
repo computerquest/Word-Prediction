@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include "NeuralNetwork.h"
 using namespace std;
 

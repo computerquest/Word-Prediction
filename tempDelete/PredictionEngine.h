@@ -19,17 +19,15 @@ public:
 	LinkedList<vector<double>, vector<double>> training;
 	vector<string> examples;
 	MLP predictNN;
-	MasterResource* master;
+	MasterResource master;
 	vector<POS> lastPhraseGlobal;
-
-	//PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource);
 
 	vector<POS> multipleMissing(string phrase);
 	vector<POS> multipleMissingTraining(string phrase);
 
 	void mergeTesting(string phrase);
 
-	PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource * resource, bool batch);
+	PredictionEngine(int inputN, vector<int> hidden, int output, bool read, bool batch);
 
 	void saveTraining();
 	void readTraining();

@@ -20,7 +20,7 @@ vector<string> breakDownV(string phrase, vector<char> delimeter) {
 	vector<string> answers;
 	string stuff;
 	int beginInt = 0;
-	int closestPos = 1000;//
+	int closestPos = 1000;
 
 	for (int i = 0; i < delimeter.size(); i++) {
 		if (closestPos > phrase.find(delimeter.at(i))) {

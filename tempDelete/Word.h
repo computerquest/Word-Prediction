@@ -10,7 +10,7 @@ public:
 	POS type;
 
 	bool operator==(Word leftside);
-	//
+	
 	bool operator==(string leftside);
 
 	Word();

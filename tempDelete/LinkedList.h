@@ -36,8 +36,8 @@ public:
 					deleteIndex(i);
 				}
 			}
-		}//
-	}//
+		}
+	}
 
 	void filterAmountK(K type, int input) {
 		int amount = 0;

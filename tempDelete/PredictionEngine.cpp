@@ -2,13 +2,14 @@
 #include "PredictionEngine.h"
 #include "MasterResource.h"
 
-PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, MasterResource* resource, bool batch) {
+PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, bool read, bool batch) {
 	std::cout << "new engine created" << endl;
-	master = resource;
 	nn.initialize(inputN, hidden, output, batch);
 	readTraining();
 	createTraining();
-	//nn.read();
+	if (read) {
+		nn.read();
+	}
 }
 
 void PredictionEngine::saveTraining() {
@@ -36,7 +37,7 @@ void PredictionEngine::createTraining() {
 
 		for (int a = 0; a < wordStrings.size(); a++) {
 			cout << wordStrings.at(a) << endl;
-			wtype.push_back(master->findWord(wordStrings.at(a)).type);
+			wtype.push_back(master.findWord(wordStrings.at(a)).type);
 		}
 
 		for (int b = 0; b < wordStrings.size(); b++) {
@@ -320,7 +321,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		hasNounBlock = vectorContains(typeBlocks.key, POS::Verb);
 	}
 
-	vector<SStructure> possibleStructure = master->matchPossibleSS(wtype);
+	vector<SStructure> possibleStructure = master.matchPossibleSS(wtype);
 
 	//LAST WORD
 	//the type of the word before
@@ -358,8 +359,8 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		}
 
 		//CHECK FIND NGRAM
-		Word w = master->findWord(wordStrings.at(targetWordIndex - 1));
-		NGram<Word> lastWordNGram = master->findNGram(w);//
+		Word w = master.findWord(wordStrings.at(targetWordIndex - 1));
+		NGram<Word> lastWordNGram = master.findNGram(w);//
 		LinkedList<int, Word> usedWords = lastWordNGram.content;
 
 		double usedNouns = 0;
@@ -428,11 +429,11 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		}
 
 		//see which types of words use this word
-		Word afterWord = master->findWord(wordStrings.at(targetWordIndex + 1));
+		Word afterWord = master.findWord(wordStrings.at(targetWordIndex + 1));
 		LinkedList<double, POS> wordCall;
-		for (int i = 0; i < master->ngramML.size(); i++) {
-			for (int a = 0; a < master->ngramML.getValueI(i).size(); a++) {
-				NGram<Word> currentNGram = master->ngramML.getValueI(i).at(a);
+		for (int i = 0; i < master.ngramML.size(); i++) {
+			for (int a = 0; a < master.ngramML.getValueI(i).size(); a++) {
+				NGram<Word> currentNGram = master.ngramML.getValueI(i).at(a);
 
 				if (currentNGram.content.containsV(afterWord)) {
 					wordCall.add(currentNGram.content.getKeyV(afterWord), currentNGram.subject.type);
@@ -638,7 +639,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 void PredictionEngine::filterExamples() {
 	LinkedList<vector<POS>, string> newList;
 	for (int i = 0; i < examples.size(); i++) {
-		vector<POS> currentExample = master->findAllWordType(examples.at(i));
+		vector<POS> currentExample = master.findAllWordType(examples.at(i));
 
 		newList.add(currentExample, examples.at(i));
 	}
@@ -656,12 +657,12 @@ vector<POS> PredictionEngine::multipleMissing(string phrase) {
 	vector<int> flaggedUnknown;
 
 	for (int i = 0; i < wordStrings.size(); i++) {
-		if (master->isDouble(wordStrings.at(i))) {
+		if (master.isDouble(wordStrings.at(i))) {
 			flagged.push_back(i);
 			wordTypes.push_back(POS::Unknown);
 		}
-		else if (master->wordExistAll(wordStrings.at(i))) {
-			wordTypes.push_back(master->findWord(wordStrings.at(i)).type);
+		else if (master.wordExistAll(wordStrings.at(i))) {
+			wordTypes.push_back(master.findWord(wordStrings.at(i)).type);
 		}
 		else {
 			wordTypes.push_back(POS::Unknown);
@@ -670,7 +671,7 @@ vector<POS> PredictionEngine::multipleMissing(string phrase) {
 	}
 
 	for (int i = 0; i < flagged.size(); i++) {
-		vector<POS> possible = master->doublePossibilities(wordStrings.at(flagged.at(i)));
+		vector<POS> possible = master.doublePossibilities(wordStrings.at(flagged.at(i)));
 
 		double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
 		double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
@@ -706,12 +707,12 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 	vector<int> flaggedUnknown;
 
 	for (int i = 0; i < wordStrings.size(); i++) {
-		if (master->isDouble(wordStrings.at(i))) {
+		if (master.isDouble(wordStrings.at(i))) {
 			flagged.push_back(i);
 			wordTypes.push_back(POS::Unknown);
 		}
-		else if (master->wordExistAll(wordStrings.at(i))) {
-			wordTypes.push_back(master->findWord(wordStrings.at(i)).type);
+		else if (master.wordExistAll(wordStrings.at(i))) {
+			wordTypes.push_back(master.findWord(wordStrings.at(i)).type);
 		}
 		else {
 			wordTypes.push_back(POS::Unknown);
@@ -720,7 +721,7 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 	}
 
 	for (int i = 0; i < flagged.size(); i++) {
-		vector<POS> possible = master->doublePossibilities(wordStrings.at(flagged.at(i)));
+		vector<POS> possible = master.doublePossibilities(wordStrings.at(flagged.at(i)));
 
 		double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
 		double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
@@ -756,7 +757,7 @@ void PredictionEngine::mergeTesting(string phrase) {
 	vector<POS> wtype;
 
 	for (int i = 0; i < wordStrings.size(); i++) {
-		wtype.push_back(master->findWord(wordStrings.at(i)).type);
+		wtype.push_back(master.findWord(wordStrings.at(i)).type);
 	}
 
 	for (int i = 0; i < wordStrings.size(); i++) {

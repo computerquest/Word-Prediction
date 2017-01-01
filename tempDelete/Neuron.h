@@ -9,12 +9,12 @@ public:
 	double value;
 	int id;
 	static int idValue;
-	bool activationFunction;////
+	bool activationFunction;
 	double influence;
-	//
+	
 	Neuron();
 
 	Neuron(int value);
 
 	void setValue(double input);
-};////
+};

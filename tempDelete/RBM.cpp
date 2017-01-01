@@ -1,4 +1,4 @@
-#include "RBM.h"
+//#include "RBM.h"
 
 /*RBM::RBM() {
 	layerFirst = true;

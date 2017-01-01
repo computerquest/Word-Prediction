@@ -9,7 +9,7 @@ public:
 	int sendId;
 	double epochWeight;
 	double lastWeight;
-	double nextWeight;//
+	double nextWeight;
 
 	Connection(double weight, int connectToID, int sendId);
 

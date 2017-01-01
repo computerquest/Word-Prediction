@@ -7,7 +7,7 @@ Connection::Connection(double weight, int connectToID, int sendId) : weight(weig
 	lastWeight = weight;
 	nextWeight = 0;
 }
-//
+
 void Connection::reciever(int id) {
 	connectToID = id;
 }

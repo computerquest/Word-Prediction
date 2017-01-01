@@ -16,5 +16,3 @@ void Neuron::setValue(double input) {
 	value = input;
 }
 int Neuron::idValue = 0;
-
-//

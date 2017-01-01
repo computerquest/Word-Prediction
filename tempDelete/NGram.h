@@ -10,7 +10,7 @@ public:
 	LinkedList<int, T> content;
 
 	NGram() {}
-	//
+	
 	NGram(T subject) : subject(subject) {}
 
 	void setSubject(T target) {

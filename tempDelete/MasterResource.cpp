@@ -1,9 +1,6 @@
 #include "MasterResource.h"
 #include "PredictionEngine.h"
 
-/*
-all the find position k and exist is taking up a lot more time than it was
-*/
 MasterResource::MasterResource() {
 	//readNGram();
 	readProbationSS();
@@ -87,7 +84,6 @@ vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> d
 void MasterResource::saveStruct() {
 	ofstream stream;
 	stream.open("sNGram.txt", ios::trunc);
-	//noun|verb|adjective|-8,noun|article|preposition|conjunction|verb|
 	for (int i = 0; i < sNGramML.size(); i++) {
 		vector<POS> current = sNGramML.at(i).subject.component;
 
@@ -112,8 +108,6 @@ void MasterResource::saveStruct() {
 	stream.close();
 }
 void MasterResource::readStruct() {
-	//article|noun|verb|preposition|article|noun|-6,noun|conjunction|noun|verb|adjective|noun|-8,noun|verb|preposition|article|noun|conjunction|verb|
-	//make all of the structures
 	{
 		vector<char> delimeters;
 		delimeters.push_back('|');
@@ -188,22 +182,6 @@ void MasterResource::readStruct() {
 
 /////////////////////////////////////////ngram
 void MasterResource::saveNGram() {
-	/*ofstream stream;
-	stream.open("NGrams.txt", ios::trunc);
-
-	for (int i = 0; i < ngramML.size(); i++) {
-		LinkedList<int, Word> content = ngramML.at(i).content;
-
-		stream << ngramML.at(i).subject.name << "," << POStoString(ngramML.at(i).subject.type);
-
-		for (int a = 0; a < content.size(); a++) {
-			stream << "|" << content.getKeyI(a) << "," << content.getValueI(a).name;
-		}
-
-		stream << "|" << endl;
-	}
-
-	stream.close();*/
 	LinkedList<int, vector<string>> fileInput;
 	for (int i = 0; i < ngramML.size(); i++) {
 		vector<string> tempVector;
@@ -236,40 +214,6 @@ void MasterResource::saveNGram() {
 	}
 }
 
-/*void MasterResource::readNGram() {
-	vector<char> delimeter;
-	delimeter.push_back(',');
-	delimeter.push_back('|');
-	delimeter.push_back(';');
-
-	vector<vector<string>> input = fileInput("NGrams.txt", delimeter);
-
-	//creates all the words
-	for (int i = 0; i < input.size(); i++) {
-		Word newWord(input.at(i).at(0), toType(input.at(i).at(1)));
-
-		NGram<Word> newNGram(newWord);
-		ngramML.push_back(newNGram);
-	}
-
-	//does all the ngram
-	for (int i = 0; i < input.size(); i++) {
-		vector<string> current = input.at(i);
-
-		Word currentWord = findWord(current.at(0));
-
-		LinkedList<int, Word> currentContent;
-
-		for (int a = 2; a < current.size() - 1; a += 2) {
-			currentContent.add(std::stoi(current.at(a)), findWord(current.at(a + 1)));
-		}
-
-		//content not being set
-		NGram<Word>* ngram = findNGramP(currentWord);
-		ngram->content = currentContent;
-	}
-}*/
-
 void MasterResource::readNGram() {
 	vector<char> delimeter;
 	delimeter.push_back('|');
@@ -277,27 +221,6 @@ void MasterResource::readNGram() {
 	vector<vector<string>> input = fileInput("NGrams.txt", delimeter);
 
 	std::cout << "creating words" << endl;
-
-	/*//creates all the words
-	for (int i = 0; i < input.size(); i++) {
-	std::cout << "Line: " << i << endl;
-	bool cancelAll = false;
-	for (int a = 1; a < 3; a++) {
-	if (!ngramExist(input.at(i).at(a))) {
-	Word newWord = createWord(input.at(i).at(a), input.at(i).at(a+2));
-
-	if (newWord.type == POS::Unknown) {
-	cancelAll = true;
-	}
-	}
-	}
-
-	if (cancelAll == true) {
-	continue;
-	}
-	NGram<Word>* ngram = findNGramP(findWord(input.at(i).at(1)));
-	ngram->content.add(stoi(input.at(i).at(0)), findWord(input.at(i).at(2)));
-	}*/
 
 	LinkedList<int, LinkedList<string, string>> data;
 	for (int i = 0; i < input.size(); i++) {
@@ -359,14 +282,6 @@ void MasterResource::readNGram() {
 	}
 }
 
-//want to reformat file so the word is on its own line and then only read those single words 
-//will make it so that we don't need to breakdown these huge things --MAYBE
-//not that expensive for file size
-
-/*
-could also have a directory for words with name and file and line number
-then just go to the file and loop through to get to the line number
-*/
 NGram<Word> MasterResource::findInFile(string search, int file) {
 	vector<char> delimeter;
 	delimeter.push_back('|');
@@ -434,9 +349,7 @@ POS MasterResource::decypherType(string secondType) {
 	else if (secondType.find("v") != std::string::npos) {
 		return POS::Verb;
 	}
-	else //if (secondType == "fu" | secondType == "ge" | secondType == "fw" | secondType == "fo" | secondType.find("f") != std::string::npos |
-		 //secondType == "ex" | secondType.find("m") != std::string::npos & secondType.find("r") == std::string::npos |
-		 //secondType.find("uh") != std::string::npos) 
+	else 
 	{
 		return POS::Unknown;
 	}
@@ -454,7 +367,6 @@ void MasterResource::writeProbationWord() {
 void MasterResource::writeProbationSS() {
 	ofstream stream;
 	stream.open("probationSS.txt", ios::trunc);
-	//9|noun|verb|adjective|
 	for (int i = 0; i < probationSS.size(); i++) {
 		vector<POS> current = probationSS.getValueI(i).component;
 
@@ -521,12 +433,6 @@ vector<POS> MasterResource::findAllWordType(string input) {
 	for (int i = 0; i < wordS.size(); i++) {
 		string currentWord = wordS.at(i);
 		if (wordExist(wordS.at(i))) {
-			/*if (isDouble(wordS.at(i)) == true) {
-			answer.push_back(findDouble(input, wordS.at(i)).type);
-			}
-			else {
-			answer.push_back(findWord(currentWord).type);
-			}*/
 		}
 		else if (probationExistWord(wordS.at(i))) {
 			answer.push_back(findProbationWord(currentWord).type);
@@ -678,7 +584,6 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 
 ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
-	//return *findNGramP(word); for some reason didn't work
 	int value = stringToInt(word.name);
 
 	if (!ngramExist(word)) {
@@ -692,11 +597,17 @@ NGram<Word> MasterResource::findNGram(Word word) {
 		}
 	}
 }
+
+//DOESNT WORK
+//returns pointer to a copy of a linkedlist ngram
 NGram<Word>* MasterResource::findNGramP(Word word) {
 	int value = stringToInt(word.name);
 
+	//this needs to have a return statement
+	//a problem is that linkedlist only returns a copy of the vector so this doesn't work 
 	if (!ngramExist(word)) {
 		findInFile(word.name, value);
+		//return &ngramML.getValueK(value).
 	}
 
 	int kPos = ngramML.getPostionK(value);
