@@ -10,9 +10,9 @@ public:
 	void process(vector<double> input);
 
 	void fix(vector<double> inputs, vector<double> desired);
-
+	
 	void initialize(int input, vector<int> hidden, int output, bool batchI);
-	double train(LinkedList<vector<double> , vector<double>> inputs);
-	double train(int maxEpoch);//
+	double train(LinkedList<vector<double>, vector<double>> inputs);
+	double train(int maxEpoch);
 	double train(int maxEpoch, string extension);
 };
