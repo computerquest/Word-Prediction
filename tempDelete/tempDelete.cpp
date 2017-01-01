@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "PredictionEngine.h"
 #include "MasterResource.h"
-#include "RBM.h"
 #include "MLP.h"
 
 void defaultTest() {
