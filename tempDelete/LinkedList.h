@@ -2,7 +2,6 @@
 #include <vector>
 using namespace std;
 
-//MAY HAVE ISSUES BECAUSE YOU ARE USING RETURNING A VALUE WHEN ACCESSING INSTEAD OF A POINTER
 template<typename K, typename V> class LinkedList {
 public:
 	vector<K> key;
@@ -25,30 +24,6 @@ public:
 		}
 
 		return false;
-	}
-
-	void filterAmountV(V type, int input) {
-		int amount = 0;
-		for (int i = 0; i < value.size(); i++) {
-			if (type == value.at(i)) {
-				amount++;
-				if (amount > input) {
-					deleteIndex(i);
-				}
-			}
-		}
-	}
-
-	void filterAmountK(K type, int input) {
-		int amount = 0;
-		for (int i = 0; i < key.size(); i++) {
-			if (type == key.at(i)) {
-				amount++;
-				if (amount > input) {
-					deleteIndex(i);
-				}
-			}
-		}
 	}
 
 	void filterDuplicatesK() {
@@ -155,23 +130,23 @@ public:
 	}
 
 	///////////////////////////////////////////////////////////////get///////////////////////////////////
-	V getValueK(K keyValue) {
+	V& getValueK(K keyValue) {
 		int index = getPostionK(keyValue);
 
 		return value.at(index);
 	}
 
-	V getValueI(int index) {
+	V& getValueI(int index) {
 		return value.at(index);
 	}
 
-	K getKeyV(V valueInput) {
+	K& getKeyV(V valueInput) {
 		int index = getPostionV(valueInput);
 
 		return key.at(index);
 	}
 
-	K getKeyI(int index) {
+	K& getKeyI(int index) {
 		return key.at(index);
 	}
 
@@ -184,9 +159,4 @@ public:
 		value.push_back(addValue);
 		key.push_back(addKey);
 	}
-
-	/*~LinkedList() {
-		delete key;
-		delete value;
-	}*/
 };

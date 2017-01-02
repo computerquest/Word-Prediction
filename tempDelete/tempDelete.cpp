@@ -27,23 +27,17 @@ void defaultTest() {
 }
 
 void applicationTest() {
-	MasterResource master;
-	MasterResource* pMaster = &master;
-
 	//hidden layer numbers
 	vector<int> temprorary;
 	temprorary.push_back(40); //was just 40 originally
 	temprorary.push_back(10);
 
-	PredictionEngine engine(43, temprorary, 3, pMaster, false);
-
-	master.engine = &engine;
+	PredictionEngine engine(43, temprorary, 3, false, true);
 
 	engine.nn.learningRate = .1;
 	engine.nn.momentum = .9;
 
-	engine.nn.train(10000, "linearSeperable");
-	delete pMaster;
+ 	engine.nn.train(10000, "linearSeperable");
 }
 
 void practicalTest() {

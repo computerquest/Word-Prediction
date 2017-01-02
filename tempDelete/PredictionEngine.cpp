@@ -610,13 +610,6 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	neuralNetworkInput.push_back(verbEnding);		//0
 	neuralNetworkInput.push_back(adjectiveEnding);
 
-	double totalNodesUsed = 0;
-	for (int i = 0; i < neuralNetworkInput.size(); i++) {
-		if (neuralNetworkInput.at(i) != 0) {
-			totalNodesUsed++;
-		}
-	}
-
 	nn.process(neuralNetworkInput);
 
 	double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;

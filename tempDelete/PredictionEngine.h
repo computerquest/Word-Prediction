@@ -32,18 +32,9 @@ public:
 	void saveTraining();
 	void readTraining();
 
-	//void mergeTraining();
-
 	void createTraining();
-
-	//void save();
-	//void read();
-
-	//void findType();
 
 	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
 
 	void filterExamples();
-
-	//void generateData(int amount);
 }; //class end 

@@ -2,7 +2,7 @@
 
 MLP::MLP() {}
 void MLP::process() {
-	setInput(currentInput);
+	//setInput(currentInput);
 
 	for (int i = 1; i < neuralNetwork.size(); i++) {
 		for (int a = 0; a < neuralNetwork.at(i).size(); a++) {
@@ -130,10 +130,10 @@ void MLP::initialize(int input, vector<int> hidden, int output, bool batchI)
 	masterConnection = newMasterConnect;
 }
 
-double MLP::train(LinkedList<vector<double>, vector<double>> inputs) {
+double MLP::train(LinkedList<vector<double>, vector<double>> inputs, int end) {
 	double lastError = 10000;
 	double smallestError = 10000;
-	for (int s = 1; s < 1001; s++) {
+	for (int s = 1; s < end; s++) {
 		double error = 0;
 		for (int a = 0; a < inputs.size(); a++) {
 			double lineError = 0;
@@ -183,9 +183,7 @@ double MLP::train(LinkedList<vector<double>, vector<double>> inputs) {
 
 	return lastError;
 }
-double MLP::train(int end) {
-	return train(trainingValues);
-}
+
 double MLP::train(int end, string extension) {
 	ofstream stream("history" + extension + ".txt", ios::trunc);
 

@@ -306,14 +306,7 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 			}
 
 			if (ngramML.containsK(file)) {
-				vector<NGram<Word>> temp;
-				for (int c = 0; c < ngramML.getValueK(file).size(); c++) {
-					temp.push_back(ngramML.getValueK(file).at(c));
-				}
-
-				temp.push_back(newNGram);
-
-				ngramML.changeValueK(file, temp);
+				ngramML.getValueK(file).push_back(newNGram);
 			}
 			else {
 				vector<NGram<Word>> temp;
@@ -584,33 +577,18 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 
 ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
-	int value = stringToInt(word.name);
-
-	if (!ngramExist(word)) {
-		findInFile(word.name, value);
-	}
-
-	int kPos = ngramML.getPostionK(value);
-	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
-		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
-			return ngramML.getValueI(kPos).at(i);
-		}
-	}
+	return *findNGramP(word);
 }
 
-//DOESNT WORK
-//returns pointer to a copy of a linkedlist ngram
 NGram<Word>* MasterResource::findNGramP(Word word) {
 	int value = stringToInt(word.name);
+	int kPos = ngramML.getPostionK(value);
 
-	//this needs to have a return statement
-	//a problem is that linkedlist only returns a copy of the vector so this doesn't work 
 	if (!ngramExist(word)) {
 		findInFile(word.name, value);
-		//return &ngramML.getValueK(value).
+		return &ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size()-1);
 	}
 
-	int kPos = ngramML.getPostionK(value);
 	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
 		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
 			return &ngramML.getValueI(kPos).at(i);
