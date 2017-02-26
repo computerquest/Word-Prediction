@@ -5,6 +5,9 @@ string punctuationToString(Punctuation p)
 	if (p == Punctuation::PARENTHESESL) {
 		return "(";
 	}
+	else if (p == UNDEFINED) {
+		return "udefined";
+	}
 	else if (p == Punctuation::PARENTHESESR) {
 		return ")";
 	}
@@ -119,5 +122,8 @@ Punctuation stringToPunctuation(string p)
 	}
 	else if (p == ". . .") {
 		return ELLIPSES;
+	}
+	else {
+		return UNDEFINED;
 	}
 }

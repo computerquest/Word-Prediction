@@ -2,11 +2,12 @@
 #include "PredictionEngine.h"
 #include "MasterResource.h"
 
+//changed everything
 PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, bool read, bool batch) {
 	std::cout << "new engine created" << endl;
-	nn.initialize(inputN, hidden, output, batch);
+	//nn.initialize(inputN, hidden, output, batch);
 	readTraining();
-	createTraining();
+	//createTraining();
 	if (read) {
 		nn.read();
 	}

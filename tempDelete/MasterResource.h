@@ -42,6 +42,8 @@ public:
 	//Word findDouble(string phrase, string target);
 	SStructure findPartailStructure(vector<POS> order);
 
+	SStructure * findStructurePercisionP(vector<POS> order);
+
 	Word findProbationWord(string word);
 
 	vector<SStructure> matchPossibleSS(vector<POS> input);

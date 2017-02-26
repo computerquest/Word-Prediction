@@ -1,11 +1,12 @@
 #include "MasterResource.h"
 #include "PredictionEngine.h"
 
+//UNDO CHANGES
 MasterResource::MasterResource() {
 	//readNGram();
-	readProbationSS();
-	readProbationWord();
-	readStruct();
+	//readProbationSS();
+	//readProbationWord();
+	//readStruct();
 	std::cout << "new mr" << endl;
 }
 
@@ -317,6 +318,11 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 			return newNGram;
 		}
 	}
+
+	NGram<Word> defaultNG;
+	Word defaultWord("not found", POS::Unknown);
+	defaultNG.subject = defaultWord;
+	return defaultNG;
 }
 POS MasterResource::decypherType(string secondType) {
 	if (secondType.find("np") != std::string::npos | secondType.find("nn") != std::string::npos | secondType == "appge" |
@@ -342,7 +348,7 @@ POS MasterResource::decypherType(string secondType) {
 	else if (secondType.find("v") != std::string::npos) {
 		return POS::Verb;
 	}
-	else 
+	else
 	{
 		return POS::Unknown;
 	}
@@ -419,6 +425,8 @@ bool MasterResource::wordExistAll(string word) {
 	return wordExist(word);
 }
 ////////////////////////////////////////////////////////////////////////////////FIND
+
+//INCOMPLETE
 vector<POS> MasterResource::findAllWordType(string input) {
 	vector<string> wordS = breakDownV(input);
 	vector<POS> answer;
@@ -451,6 +459,9 @@ Word MasterResource::findWord(string word)
 			return temp;
 		}
 	}
+
+	Word defaultWord("not found", POS::Unknown);
+	return defaultWord;
 }
 
 ////////////////////////////////////////////////structure
@@ -544,7 +555,23 @@ SStructure MasterResource::findPartailStructure(vector<POS> order) {
 
 	return defaultStruct;
 }
-
+SStructure* MasterResource::findStructurePercisionP(vector<POS> order) {
+	for (int i = 0; i < sNGramML.size(); i++) {
+		vector<POS> current = sNGramML.at(i).subject.component;
+		bool solution = true;
+		if (current.size() == order.size()) {
+			for (int a = 0; a < order.size(); a++) {
+				if (current.at(a) != order.at(a)) {
+					solution = false;
+					break;
+				}
+			}
+			if (solution == true) {
+				return &sNGramML.at(i).subject;
+			}
+		}
+	}
+}
 /////////////////////////////////////ngram
 NGram<SStructure>* MasterResource::findNGramSS(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
@@ -586,7 +613,7 @@ NGram<Word>* MasterResource::findNGramP(Word word) {
 
 	if (!ngramExist(word)) {
 		findInFile(word.name, value);
-		return &ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size()-1);
+		return &ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size() - 1);
 	}
 
 	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {

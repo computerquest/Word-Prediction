@@ -159,4 +159,22 @@ public:
 		value.push_back(addValue);
 		key.push_back(addKey);
 	}
+
+	void addOrAppendK(K keyI, V valueI) {
+		if (containsK(keyI)) {
+			changeValueK(keyI, valueI);
+		}
+		else {
+			add(keyI, valueI);
+		}
+	}
+
+	void addOrAppendV(K keyI, V valueI) {
+		if (containsV(valueI)) {
+			changeValueV(valueI, keyI);
+		}
+		else {
+			add(keyI, valueI);
+		}
+	}
 };

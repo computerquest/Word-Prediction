@@ -147,6 +147,8 @@
   <ItemGroup>
     <ClInclude Include="BreakDown.h" />
     <ClInclude Include="Connection.h" />
+    <ClInclude Include="DataCollector.h" />
+    <ClInclude Include="FileManager.h" />
     <ClInclude Include="LinkedList.h" />
     <ClInclude Include="MasterResource.h" />
     <ClInclude Include="MLP.h" />
@@ -161,12 +163,15 @@
     <ClInclude Include="SStructure.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="vectorContains.h" />
     <ClInclude Include="Word.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BreakDownV.cpp" />
     <ClCompile Include="Connection.cpp" />
+    <ClCompile Include="DataCollector.cpp" />
+    <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="MasterResource.cpp" />
     <ClCompile Include="MLP.cpp" />
     <ClCompile Include="NeuralNetwork.cpp" />
@@ -184,6 +189,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="tempDelete.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="Word.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,7 +1,9 @@
 #include "stdafx.h"
+#include "DataCollector.h"
 #include "PredictionEngine.h"
 #include "MasterResource.h"
 #include "MLP.h"
+#include "Text.h"
 
 void defaultTest() {
 	MLP m;
@@ -69,7 +71,36 @@ void practicalTest() {
 }
 int main()
 {
-	applicationTest();
+	MasterResource master;
+	//hidden layer numbers
+	vector<int> temprorary;
+	temprorary.push_back(1); //was just 40 originally
+	temprorary.push_back(1);
+
+	PredictionEngine engine(1, temprorary, 3, false, true);
+
+
+	Text t("Sherlock.txt");
+	t.read();
+	t.createParagraph();
+
+	//applicationTest();
+	DataCollector d("Sherlock.txt");
+	d.master = &master;
+	d.engine = &engine;
+
+	//d.read();
+	//d.dialogueFilter();
+	//d.breakExpos();
+	//d.trimEndsWhite();
+	//d.joinCharacters();
+	//d.addWhiteSpace();
+	//d.breakText();
+	//d.trimEndsWhite();
+	//d.joinCharacters();
+	//d.filterDelimeter('\"');
+	d.findData();
+	
 	cout << "end" << endl;
 	return 0;
 }
