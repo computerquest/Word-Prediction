@@ -5,7 +5,7 @@
 //changed everything
 PredictionEngine::PredictionEngine(int inputN, vector<int> hidden, int output, bool read, bool batch) {
 	std::cout << "new engine created" << endl;
-	//nn.initialize(inputN, hidden, output, batch);
+	nn.initialize(inputN, hidden, output, batch);
 	readTraining();
 	//createTraining();
 	if (read) {
@@ -82,8 +82,42 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 	POS lastPOS = POS::Unknown;
 	vector<double> neuralNetworkInput; //thought about making pointer but would have to modify nn class
 
-									   //creates POS blocks
+	vector<POS> blocks = wtype;
+	//find the adjacent
+	for (int i = 0; i-1 < blocks.size(); i++) {
+		if (blocks[i] == blocks[i + 1]) {
+			blocks.erase(blocks.begin() + i + 1);
+		}
+	}
 
+	cout << "good stuff";
+
+	//create noun blocks
+	int startIndex = 0; //the next available thing to add it is 0 based
+	bool articleIndex = false;
+	for (int i = 0; i < blocks.size(); i++) {
+		if (blocks[i] == POS::Article) {
+			startIndex = i;
+		}
+		else if (!articleIndex && blocks[i] == Adjective || blocks[i] == Verb || blocks[i] == Conjuction || blocks[i] == Preposition) {
+			startIndex = i + 1;
+		}
+		else if (blocks[i] == Noun) {
+			for (int a = startIndex; a < i; a++) {
+				blocks.erase(blocks.begin() + a);
+			}
+		}
+	}
+
+	cout << "good stuff";
+
+	//create verb blocks
+	for (int i = blocks.size() - 1; i - 1 >= 0; i--) {
+		if (blocks[i] == Verb && blocks[i - 1] == Adjective) {
+			blocks.erase(blocks.begin() + i - 1);
+		}
+	}
+	cout << "good stuff";
 									   //run fat cat | run quickly jared
 	POS lastSignificantPOS = POS::Unknown;
 	for (int i = 0; i < wtype.size(); i++) {
@@ -200,7 +234,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 						typeBlocks.deleteIndex(i);
 						changed = true;
 					}
-					
+
 					iterations++;
 				}
 			}
@@ -216,6 +250,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			}
 		}
 	}
+
 	/*
 	only if there is a verb before a noun and there is no article is a adjective part of a verb block (becomes adverb but don't want to add)
 	*/
@@ -386,7 +421,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 
 		total = usedNouns + usedVerbs + usedAdjectives + total;
 
-		indicatesNoun = usedNouns / (total == 0? 1: total);
+		indicatesNoun = usedNouns / (total == 0 ? 1 : total);
 		indicatesVerb = usedVerbs / (total == 0 ? 1 : total);
 		indicatesAdjective = usedAdjectives / (total == 0 ? 1 : total);
 	}
@@ -767,7 +802,7 @@ void PredictionEngine::mergeTesting(string phrase) {
 
 		POS type;
 
-		if (one >= two && one >= three ) {
+		if (one >= two && one >= three) {
 			type = POS::Noun;
 		}
 		else if (two > one && two > three) {

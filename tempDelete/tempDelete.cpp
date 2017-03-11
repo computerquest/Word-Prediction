@@ -89,6 +89,7 @@ int main()
 	d.master = &master;
 	d.engine = &engine;
 
+
 	//d.read();
 	//d.dialogueFilter();
 	//d.breakExpos();
@@ -101,6 +102,8 @@ int main()
 	//d.filterDelimeter('\"');
 	d.findData();
 	
+	engine.createTraining();
+
 	cout << "end" << endl;
 	return 0;
 }
