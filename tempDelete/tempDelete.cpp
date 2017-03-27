@@ -4,6 +4,7 @@
 #include "MasterResource.h"
 #include "MLP.h"
 #include "Text.h"
+#include "NGramWordContainer.h"
 
 void defaultTest() {
 	MLP m;
@@ -39,7 +40,7 @@ void applicationTest() {
 	engine.nn.learningRate = .1;
 	engine.nn.momentum = .9;
 
- 	engine.nn.train(10000, "linearSeperable");
+	engine.nn.train(10000, "linearSeperable");
 }
 
 void practicalTest() {
@@ -69,8 +70,44 @@ void practicalTest() {
 
 	delete pMaster;
 }
-int main()
+
+int binarySearchBack(vector<int> input, int begin, int end, int target)
 {
+	if (end > input.size() || begin < 0) {
+		return -1;
+	}
+	int middle = (1 + end - begin) / 2;
+
+	if (input[begin + middle] == target) {
+		return begin + middle;
+	}
+	else if (end - begin == 1 && input[begin] != target) {
+		return -1;
+	}
+	else if (input[begin + middle] > target) {
+		return binarySearchBack(input, begin, begin + (middle - 1), target);
+	}
+	else if (input[middle] < target) {
+		return binarySearchBack(input, begin + middle + 1, end, target);
+	}
+}
+
+void dataCollectorTest() {
+	vector<int> values;
+	values.push_back(4);
+	values.push_back(14);
+	values.push_back(84);
+	values.push_back(445);
+	values.push_back(478);
+	values.push_back(495);
+
+	cout << binarySearchBack(values, 0,values.size()-1, 14);
+	cout << binarySearchBack(values, 0, values.size() - 1, 4);
+	cout << binarySearchBack(values, 0, values.size() - 1, 445);
+	cout << binarySearchBack(values, 0, values.size() - 1, 84);
+	cout << binarySearchBack(values, 0, values.size() - 1, 478);
+	cout << binarySearchBack(values, 0, values.size() - 1, 1); // -1
+
 	MasterResource master;
 	//hidden layer numbers
 	vector<int> temprorary;
@@ -78,7 +115,6 @@ int main()
 	temprorary.push_back(1);
 
 	PredictionEngine engine(1, temprorary, 3, false, true);
-
 
 	Text t("Sherlock.txt");
 	t.read();
@@ -88,7 +124,6 @@ int main()
 	DataCollector d("Sherlock.txt");
 	d.master = &master;
 	d.engine = &engine;
-
 
 	//d.read();
 	//d.dialogueFilter();
@@ -101,8 +136,30 @@ int main()
 	//d.joinCharacters();
 	//d.filterDelimeter('\"');
 	d.findData();
-	
-	engine.createTraining();
+
+	NGramWordContainer n;
+
+	n.populate(master.ngramML);
+	vector<Word> a = n.findWord("scratch");
+	vector<Word> w = n.findWord("he");
+
+	//n.findNGram(w);
+	//engine.createTraining();
+}
+
+
+
+void treeTest() {
+	dataCollectorTest();
+	MasterResource m;
+
+	NGramWordContainer n;
+
+	n.populate(m.ngramML);
+}
+int main()
+{
+	dataCollectorTest();
 
 	cout << "end" << endl;
 	return 0;

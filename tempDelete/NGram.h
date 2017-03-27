@@ -42,9 +42,20 @@ public:
 		content.changeKeyV(item, adjust);
 	}
 
+
+	void updateSafe(T item, int increment) {
+		if (content.containsV(item)) {
+			content.changeKeyV(item, content.getKeyV(item) + increment);
+		}
+		else {
+			addItem(item);
+			content.changeKeyV(item, increment);
+		}
+	}
 	/*~NGram() {
 		delete subject;
 		delete occerence;
 		delete content;
 	}*/
 };
+

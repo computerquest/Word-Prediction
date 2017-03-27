@@ -555,7 +555,7 @@ SStructure MasterResource::findPartailStructure(vector<POS> order) {
 
 	return defaultStruct;
 }
-SStructure* MasterResource::findStructurePercisionP(vector<POS> order) {
+SStructure& MasterResource::findStructurePercisionP(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
 		vector<POS> current = sNGramML.at(i).subject.component;
 		bool solution = true;
@@ -567,13 +567,13 @@ SStructure* MasterResource::findStructurePercisionP(vector<POS> order) {
 				}
 			}
 			if (solution == true) {
-				return &sNGramML.at(i).subject;
+				return sNGramML.at(i).subject;
 			}
 		}
 	}
 }
 /////////////////////////////////////ngram
-NGram<SStructure>* MasterResource::findNGramSS(vector<POS> order) {
+NGram<SStructure>& MasterResource::findNGramSS(vector<POS> order) {
 	for (int i = 0; i < sNGramML.size(); i++) {
 		vector<POS> current = sNGramML.at(i).subject.component;
 
@@ -587,7 +587,7 @@ NGram<SStructure>* MasterResource::findNGramSS(vector<POS> order) {
 			}
 
 			if (correct == true) {
-				return &sNGramML.at(i);
+				return sNGramML.at(i);
 			}
 		}
 	}
@@ -604,23 +604,28 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 
 ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
-	return *findNGramP(word);
+	return findNGramP(word);
 }
 
-NGram<Word>* MasterResource::findNGramP(Word word) {
+NGram<Word>& MasterResource::findNGramP(Word word) {
 	int value = stringToInt(word.name);
 	int kPos = ngramML.getPostionK(value);
 
 	if (!ngramExist(word)) {
 		findInFile(word.name, value);
-		return &ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size() - 1);
+		return ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size() - 1);
 	}
 
 	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
 		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
-			return &ngramML.getValueI(kPos).at(i);
+			return ngramML.getValueI(kPos).at(i);
 		}
 	}
+
+	Word w("");
+	NGram<Word> temp(w);
+
+	return temp;
 }
 Word MasterResource::findProbationWord(string word) {
 	for (int i = 0; i < probationWord.size(); i++) {
@@ -721,9 +726,9 @@ void MasterResource::findNew(string phrase) {
 
 };
 void MasterResource::updateNGram(Word input, int newOccerence) {
-	NGram<Word> * ngram = findNGramP(input);
+	NGram<Word> ngram = findNGramP(input);
 
-	ngram->updateItem(input, newOccerence);
+	ngram.updateItem(input, newOccerence);
 }
 
 //////////////////////////////////////////////////////////////////////////DOUBLE

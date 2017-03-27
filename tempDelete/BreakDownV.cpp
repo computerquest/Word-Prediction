@@ -70,3 +70,196 @@ string trimWhite(string s) {
 
 	return s;
 }
+
+LinkedList<POS, int> posToBlocks(vector<string> wordStrings, vector<POS> blocks)
+{
+	LinkedList<POS, int> typeBlocks;
+	int startIndex = 0; //the next available thing to add it is 0 based
+	bool articleIndex = false;
+	for (int i = 0; i < blocks.size(); i++) {
+		if (blocks[i] == POS::Article) {
+			startIndex = i;
+		}
+		else if (!articleIndex && blocks[i] == Adjective || blocks[i] == Verb || blocks[i] == Conjuction || blocks[i] == Preposition) {
+			startIndex = i + 1;
+		}
+		else if (blocks[i] == Noun) {
+			for (int a = startIndex; a < i; a++) {
+				blocks.erase(blocks.begin() + a);
+			}
+		}
+	}
+
+	cout << "good stuff";
+
+	//create verb blocks
+	for (int i = blocks.size() - 1; i - 1 >= 0; i--) {
+		if (blocks[i] == Verb && blocks[i - 1] == Adjective) {
+			blocks.erase(blocks.begin() + i - 1);
+		}
+	}
+	cout << "good stuff";
+	//run fat cat | run quickly jared
+	POS lastSignificantPOS = POS::Unknown;
+	for (int i = 0; i < blocks.size(); i++) {
+		POS type = blocks.at(i);
+
+		if (type == POS::Conjuction | type == POS::Preposition | type == POS::Adjective) {
+			if (lastSignificantPOS != POS::Unknown) {
+				typeBlocks.add(lastSignificantPOS, i - 1);
+			}
+
+			typeBlocks.add(type, i);
+
+			lastSignificantPOS = POS::Unknown;
+		}
+		else if (type == POS::Verb | type == POS::Noun | type == POS::Article) {
+			if (type == POS::Noun & lastSignificantPOS == POS::Noun) {
+				continue;
+			}
+
+			if (lastSignificantPOS != POS::Unknown) {
+				typeBlocks.add(lastSignificantPOS, i - 1);
+			}
+
+			lastSignificantPOS = type == POS::Article ? POS::Noun : type;
+		}
+	}
+
+	if (lastSignificantPOS != POS::Unknown) {
+		typeBlocks.add(lastSignificantPOS, blocks.size() - 1);
+	}
+
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		if (i > 0 && type == POS::Adjective) {
+			POS secondary = typeBlocks.getKeyI(i - 1);
+
+			if (secondary == POS::Adjective) {
+				typeBlocks.changeValueI(i, typeBlocks.getValueI(i - 1));
+			}
+		}
+	}
+
+	//find prep phrases
+	for (int i = 0; i + 1 < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		POS secondary = typeBlocks.getKeyI(i + 1);
+		if (type == POS::Preposition && secondary == POS::Noun) {
+			typeBlocks.changeValueI(i, typeBlocks.getValueI(i + 1));
+			typeBlocks.deleteIndex(i + 1);
+		}
+	}
+
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		POS type = typeBlocks.getKeyI(i);
+		if (type == POS::Adjective) {
+			if (i > 0) {
+				int beginning = typeBlocks.getValueI(i - 1);
+				int end = typeBlocks.getValueI(i);
+
+				bool changed = false;
+
+				POS newType = POS::Noun;
+				for (int b = beginning; b <= end; b++) {
+					if (wordStrings.at(b).find("ly") == std::string::npos) {
+						newType = POS::Verb;
+
+						if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+							typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+							typeBlocks.deleteIndex(i);
+							changed = true;
+						}
+						else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+							typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+							typeBlocks.deleteIndex(i);
+							changed = true;
+						}
+
+						break;
+					}
+				}
+
+				if (changed == false) {
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Noun) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Noun) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+				}
+
+				int iterations = 0;
+				while (changed == false && iterations < 3) {
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Noun) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Noun) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+						typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+					else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+						typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+						typeBlocks.deleteIndex(i);
+						changed = true;
+					}
+
+					iterations++;
+				}
+			}
+		}
+		else if (type == POS::Preposition) {
+			if (i > 0 && typeBlocks.getKeyI(i - 1) == POS::Verb) {
+				typeBlocks.changeValueI(i - 1, typeBlocks.getValueI(i));
+				typeBlocks.deleteIndex(i);
+			}
+			else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
+				typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+				typeBlocks.deleteIndex(i);
+			}
+		}
+	}
+
+	return typeBlocks;
+}
+
+//searches for integer existence
+bool binaryExist(vector<int> input, int target) {
+	if (input.size() == 0) {
+		return 0;
+	}
+	int middle = (input.size())/2;
+
+	if (input[middle] == target) {
+		return true;
+	}
+	else if (input.size() == 1 && input[0] != target) {
+		return false;
+	}
+	else if (input[middle] > target) {
+		for (int i = middle; i < input.size(); i++) {
+			input.erase(input.begin()+middle);
+		}
+
+		return binaryExist(input, target);
+	}
+	else if (input[middle] < target) {
+		for (int i = 0; i <= middle; i++) {
+			input.erase(input.begin());
+		}
+
+		return binaryExist(input, target);
+	}
+}

@@ -16,7 +16,7 @@ class PredictionEngine;
 
 class MasterResource {
 public:
-	LinkedList<int , vector<NGram<Word>>> ngramML;
+	LinkedList<int, vector<NGram<Word>>> ngramML;
 	vector<NGram<SStructure>> sNGramML;
 	LinkedList<int, Word> probationWord;
 	LinkedList<int, SStructure> probationSS;
@@ -42,7 +42,7 @@ public:
 	//Word findDouble(string phrase, string target);
 	SStructure findPartailStructure(vector<POS> order);
 
-	SStructure * findStructurePercisionP(vector<POS> order);
+	SStructure& findStructurePercisionP(vector<POS> order);
 
 	Word findProbationWord(string word);
 
@@ -50,11 +50,11 @@ public:
 	SStructure findStructurePercision(vector<POS> order);
 	SStructure findPartailStructure(vector<POS> order, int missing);
 
-	NGram<SStructure>* findNGramSS(vector<POS> order);
+	NGram<SStructure>& findNGramSS(vector<POS> order);
 	NGram<SStructure> findNGramS(vector<POS> parts);
 
 	NGram<Word> findNGram(Word word);
-	NGram<Word>* findNGramP(Word word);
+	NGram<Word>& findNGramP(Word word);
 
 	NGram<Word> findInFile(string search, int file);
 	POS decypherType(string secondType);

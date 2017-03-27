@@ -5,6 +5,7 @@
 #include "POS.h"
 using namespace std;
 
+//this has been simplified to using basic blocks
 class SStructure {
 public:
 	vector<POS> component;

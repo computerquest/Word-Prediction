@@ -48,3 +48,53 @@ string POStoString(POS typeInput) {
 		return "article";
 	}
 }
+
+int POStoInt(POS typeInput)
+{
+	if (typeInput == POS::Noun) {
+		return 0;
+	}
+	else if (typeInput == POS::Verb) {
+		return 1;
+	}
+	else if (typeInput == POS::Unknown) {
+		return 2;
+	}
+	else if (typeInput == POS::Adjective) {
+		return 3;
+	}
+	else if (typeInput == POS::Preposition) {
+		return 4;
+	}
+	else if (typeInput == POS::Conjuction) {
+		return 5;
+	}
+	else if (typeInput == POS::Article) {
+		return 6;
+	}
+}
+
+POS intToPOS(int i)
+{
+	if (i == 0) {
+		return Noun;
+	}
+	else if (i == 1) {
+		return Verb;
+	}
+	else if (i == 2) {
+		return Unknown;
+	}
+	else if (i == 3) {
+		return Adjective;
+	}
+	else if (i == 4) {
+		return Preposition;
+	}
+	else if (i == 5) {
+		return Conjuction;
+	}
+	else if (i == 6) {
+		return Article;
+	}
+}

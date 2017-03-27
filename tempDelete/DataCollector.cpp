@@ -71,10 +71,10 @@ void DataCollector::findData()
 		}
 		//need to get the gram to update the occerence
 		else if (master->sstructureExist(parts)) {
-			SStructure* ss = master->findStructurePercisionP(parts);
-			ss->addEnding(end);
+			SStructure ss = master->findStructurePercisionP(parts);
+			ss.addEnding(end);
 			for (int i = 0; i < duringPunc.size(); i++) {
-				ss->addPunctuation(duringPunc.at(i));
+				ss.addPunctuation(duringPunc.at(i));
 			}
 		}
 	}
@@ -110,6 +110,9 @@ void DataCollector::findData()
 				parts.push_back(word.type);
 			}
 			else {
+				/*if (b < words.size() - 1 && master->findWord(words.at(b)).getWord() != "not found") {
+					master->findNGramP(word).updateSafe(master->findWord(words.at(b+1)), 1);
+				}*/
 				break;
 			}
 		}
@@ -123,10 +126,10 @@ void DataCollector::findData()
 		}
 		//need to get the gram to update the occerence
 		else if (master->sstructureExist(parts)) {
-			SStructure* ss = master->findStructurePercisionP(parts);
-			ss->addEnding(end);
+			SStructure ss = master->findStructurePercisionP(parts);
+			ss.addEnding(end);
 			for (int i = 0; i < duringPunc.size(); i++) {
-				ss->addPunctuation(duringPunc.at(i));
+				ss.addPunctuation(duringPunc.at(i));
 			}
 		}
 	}
