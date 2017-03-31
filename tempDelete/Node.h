@@ -9,7 +9,6 @@ class Node{
 public:
 	vector<Node> nextBranch; // can not have duplicates
 	int value;
-	int depth;
 
 	Node(int value) {
 		this->value = value;
@@ -21,9 +20,16 @@ public:
 			return nextBranch[pos];
 		}
 
-		insert(inputValue);
+		return insert(inputValue);
+	}
 
-		return nextBranch[nextBranch.size()-1];
+	Node& getNext(int value) {
+		int pos = -1;
+		if ((pos = binarySearch(nextBranch, 0, nextBranch.size() - 1, value)) != -1) {
+			return nextBranch[pos];
+		}
+
+		return Node(-1);
 	}
 
 	bool operator==(Node rightSide) {
@@ -43,16 +49,16 @@ public:
 	}
 
 private:
-	void insert(int value) {
+	Node& insert(int value) {
 		Node newRoot(value);
 		for (int a = nextBranch.size() - 1; a >= -1; a--) {
 			if (a == -1) {
 				nextBranch.insert(nextBranch.begin(), newRoot);
-				break;
+				return nextBranch[0];
 			}
 			else if (nextBranch[a].value < value) {
 				nextBranch.insert(nextBranch.begin() + a + 1, newRoot);
-				break;
+				return nextBranch[a+1];
 			}
 		}
 	}
@@ -87,22 +93,22 @@ private:
 
 	int binarySearch(vector<Node> input, int begin, int end, int target)
 	{
-		if (end > input.size() || begin < 0) {
+		if (begin > end) {
 			return -1;
 		}
-		int middle = (1 + end - begin) / 2;
+		int middle = (begin + end) / 2;
 
-		if (input[begin + middle].value == target) {
-			return begin + middle;
+		if (input[middle].value == target) {
+			return middle;
 		}
-		else if (end - begin == 1 && input[begin].value != target) {
+		else if (end - begin == 0 && input[middle].value != target) {
 			return -1;
 		}
-		else if (input[begin + middle].value > target) {
-			return binarySearch(input, begin, begin + (middle - 1), target);
+		else if (input[middle].value > target) {
+			return binarySearch(input, begin, (middle - 1), target);
 		}
 		else if (input[middle].value < target) {
-			return binarySearch(input, begin + middle + 1, end, target);
+			return binarySearch(input, middle + 1, end, target);
 		}
 	}
 };

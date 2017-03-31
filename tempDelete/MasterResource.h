@@ -9,6 +9,7 @@
 #include "NGram.h"//
 #include <algorithm>
 #include "BreakDown.h"
+#include "NGramWordContainer.h"
 #include <fstream>
 using namespace std;
 //

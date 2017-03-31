@@ -71,44 +71,40 @@ void practicalTest() {
 	delete pMaster;
 }
 
-int binarySearchBack(vector<int> input, int begin, int end, int target)
+int binarySearch(vector<int> input, int begin, int end, int target)
 {
-	if (end > input.size() || begin < 0) {
+	if (begin > end) {
 		return -1;
 	}
-	int middle = (1 + end - begin) / 2;
+	int middle = (begin+end) / 2;
 
-	if (input[begin + middle] == target) {
-		return begin + middle;
+	if (input[middle] == target) {
+		return middle;
 	}
-	else if (end - begin == 1 && input[begin] != target) {
+	else if (end - begin == 0 && input[middle] != target) {
 		return -1;
 	}
-	else if (input[begin + middle] > target) {
-		return binarySearchBack(input, begin, begin + (middle - 1), target);
+	else if (input[middle] > target) {
+		return binarySearch(input, begin, (middle-1), target);
 	}
 	else if (input[middle] < target) {
-		return binarySearchBack(input, begin + middle + 1, end, target);
+		return binarySearch(input, middle+1, end, target);
 	}
 }
-
 void dataCollectorTest() {
-	vector<int> values;
-	values.push_back(4);
-	values.push_back(14);
-	values.push_back(84);
-	values.push_back(445);
-	values.push_back(478);
-	values.push_back(495);
+	vector<int> i;
+	i.push_back(12);
+	i.push_back(435);
+	i.push_back(666);
+i.push_back(10000);
+cout <<	binarySearch(i, 0, i.size() - 1, 12);
+cout <<	binarySearch(i, 0, i.size() - 1, 1);
+	cout << binarySearch(i, 0, i.size() - 1, 2);
+	cout << binarySearch(i, 0, i.size() - 1, 435);
+	cout << binarySearch(i, 0, i.size() - 1, 666);
+	cout << binarySearch(i, 0, i.size() - 1, 10000);
 
-	cout << binarySearchBack(values, 0,values.size()-1, 14);
-	cout << binarySearchBack(values, 0, values.size() - 1, 4);
-	cout << binarySearchBack(values, 0, values.size() - 1, 445);
-	cout << binarySearchBack(values, 0, values.size() - 1, 84);
-	cout << binarySearchBack(values, 0, values.size() - 1, 478);
-	cout << binarySearchBack(values, 0, values.size() - 1, 1); // -1
-
-	MasterResource master;
+ 	MasterResource master;
 	//hidden layer numbers
 	vector<int> temprorary;
 	temprorary.push_back(1); //was just 40 originally
