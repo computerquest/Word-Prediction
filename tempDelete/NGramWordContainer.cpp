@@ -39,7 +39,7 @@ vector<Word> NGramWordContainer::findWord(string word)
 	return answer;
 }
 
-NGram<Word> NGramWordContainer::findNGram(Word w)
+NGram<Word>& NGramWordContainer::findNGram(Word w)
 {
 	vector<NGram<Word>> data = search(w.name);
 	for (int i = 0; i < data.size(); i++) {

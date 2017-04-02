@@ -21,7 +21,7 @@ public:
 	void generateStringTree(Node& node, Word input, int inputNGram);
 
 	vector<Word> findWord(string word);
-	NGram<Word> findNGram(Word w);
+	NGram<Word>& findNGram(Word w);
 
 private:
 	vector<NGram<Word>> search(string word);

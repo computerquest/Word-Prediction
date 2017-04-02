@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tempDelete", "tempDelete\tempDelete.vcxproj", "{36B2C4D2-7198-4B46-9B9F-F0B3CBEB027C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{36B2C4D2-7198-4B46-9B9F-F0B3CBEB027C}.Release|x64.Build.0 = Release|x64
 		{36B2C4D2-7198-4B46-9B9F-F0B3CBEB027C}.Release|x86.ActiveCfg = Release|Win32
 		{36B2C4D2-7198-4B46-9B9F-F0B3CBEB027C}.Release|x86.Build.0 = Release|Win32
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Debug|x64.ActiveCfg = Debug|x64
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Debug|x64.Build.0 = Debug|x64
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Debug|x86.ActiveCfg = Debug|Win32
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Debug|x86.Build.0 = Debug|Win32
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Release|x64.ActiveCfg = Release|x64
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Release|x64.Build.0 = Release|x64
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Release|x86.ActiveCfg = Release|Win32
+		{7CC778D5-83EE-4BD3-B77E-EC3D7D04492C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

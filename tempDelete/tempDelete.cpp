@@ -71,39 +71,7 @@ void practicalTest() {
 	delete pMaster;
 }
 
-int binarySearch(vector<int> input, int begin, int end, int target)
-{
-	if (begin > end) {
-		return -1;
-	}
-	int middle = (begin+end) / 2;
-
-	if (input[middle] == target) {
-		return middle;
-	}
-	else if (end - begin == 0 && input[middle] != target) {
-		return -1;
-	}
-	else if (input[middle] > target) {
-		return binarySearch(input, begin, (middle-1), target);
-	}
-	else if (input[middle] < target) {
-		return binarySearch(input, middle+1, end, target);
-	}
-}
 void dataCollectorTest() {
-	vector<int> i;
-	i.push_back(12);
-	i.push_back(435);
-	i.push_back(666);
-i.push_back(10000);
-cout <<	binarySearch(i, 0, i.size() - 1, 12);
-cout <<	binarySearch(i, 0, i.size() - 1, 1);
-	cout << binarySearch(i, 0, i.size() - 1, 2);
-	cout << binarySearch(i, 0, i.size() - 1, 435);
-	cout << binarySearch(i, 0, i.size() - 1, 666);
-	cout << binarySearch(i, 0, i.size() - 1, 10000);
-
  	MasterResource master;
 	//hidden layer numbers
 	vector<int> temprorary;
@@ -139,6 +107,8 @@ cout <<	binarySearch(i, 0, i.size() - 1, 1);
 	vector<Word> a = n.findWord("scratch");
 	vector<Word> w = n.findWord("he");
 
+	master.findWord("he");
+	master.findWord("sacrificed");
 	//n.findNGram(w);
 	//engine.createTraining();
 }
@@ -155,7 +125,7 @@ void treeTest() {
 }
 int main()
 {
-	dataCollectorTest();
+	//dataCollectorTest();
 
 	cout << "end" << endl;
 	return 0;
