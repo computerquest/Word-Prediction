@@ -295,8 +295,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			afterArticle = 1;
 		}
 
+		//todo fix this it will not work needs ALL ngrams
 		//see which types of words use this word
-		Word afterWord = master.findWord(wordStrings.at(targetWordIndex + 1));
+		/*Word afterWord = master.findWord(wordStrings.at(targetWordIndex + 1));
 		LinkedList<double, POS> wordCall;
 		for (int i = 0; i < master.ngramML.size(); i++) {
 			for (int a = 0; a < master.ngramML.getValueI(i).size(); a++) {
@@ -306,7 +307,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 					wordCall.add(currentNGram.content.getKeyV(afterWord), currentNGram.subject.type);
 				}
 			}
-		}
+		}*/
 
 		double nounUsed = 0;
 		double verbUsed = 0;
@@ -315,7 +316,9 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		double prepositionUsed = 0;
 		double articleUsed = 0;
 		double total = 0;
-		for (int i = 0; i < wordCall.size(); i++) {
+
+		//todo same as above
+		/*for (int i = 0; i < wordCall.size(); i++) {
 			POS callerType = wordCall.getValueI(i);
 
 			if (callerType == POS::Noun) {
@@ -336,7 +339,7 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 			else if (callerType == POS::Article) {
 				articleUsed += wordCall.getKeyI(i);
 			}
-		}
+		}*/
 		total = nounUsed + verbUsed + adjectiveUsed + conjunctionUsed + prepositionUsed + articleUsed;
 
 		//creates the ratio

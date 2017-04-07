@@ -155,8 +155,6 @@
     <ClInclude Include="NeuralNetwork.h" />
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="NGram.h" />
-    <ClInclude Include="NGramWordContainer.h" />
-    <ClInclude Include="Node.h" />
     <ClInclude Include="Phrase.h" />
     <ClInclude Include="POS.h" />
     <ClInclude Include="PredictionEngine.h" />
@@ -178,7 +176,6 @@
     <ClCompile Include="MLP.cpp" />
     <ClCompile Include="NeuralNetwork.cpp" />
     <ClCompile Include="Neuron.cpp" />
-    <ClCompile Include="NGramWordContainer.cpp" />
     <ClCompile Include="Phrase.cpp" />
     <ClCompile Include="POS.cpp" />
     <ClCompile Include="PredictionEngine.cpp" />

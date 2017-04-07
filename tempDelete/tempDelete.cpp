@@ -4,7 +4,7 @@
 #include "MasterResource.h"
 #include "MLP.h"
 #include "Text.h"
-#include "NGramWordContainer.h"
+
 
 void defaultTest() {
 	MLP m;
@@ -73,6 +73,10 @@ void practicalTest() {
 
 void dataCollectorTest() {
  	MasterResource master;
+
+
+	cout << master.findWord("he").name;
+	cout << master.findWord("sacrificed").name;
 	//hidden layer numbers
 	vector<int> temprorary;
 	temprorary.push_back(1); //was just 40 originally
@@ -101,31 +105,15 @@ void dataCollectorTest() {
 	//d.filterDelimeter('\"');
 	d.findData();
 
-	NGramWordContainer n;
-
-	n.populate(master.ngramML);
-	vector<Word> a = n.findWord("scratch");
-	vector<Word> w = n.findWord("he");
-
 	master.findWord("he");
 	master.findWord("sacrificed");
 	//n.findNGram(w);
 	//engine.createTraining();
 }
 
-
-
-void treeTest() {
-	dataCollectorTest();
-	MasterResource m;
-
-	NGramWordContainer n;
-
-	n.populate(m.ngramML);
-}
 int main()
 {
-	//dataCollectorTest();
+	dataCollectorTest();
 
 	cout << "end" << endl;
 	return 0;

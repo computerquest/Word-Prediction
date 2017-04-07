@@ -1,7 +1,9 @@
 #include "MasterResource.h"
 #include "PredictionEngine.h"
 
-//UNDO CHANGES
+//todo make sure can return doubles based on string
+//todo upgrade file system?
+//todo UNDO CHANGES
 MasterResource::MasterResource() {
 	//readNGram();
 	//readProbationSS();
@@ -184,10 +186,11 @@ void MasterResource::readStruct() {
 /////////////////////////////////////////ngram
 void MasterResource::saveNGram() {
 	LinkedList<int, vector<string>> fileInput;
-	for (int i = 0; i < ngramML.size(); i++) {
+	for (auto &a : ngramML) {
 		vector<string> tempVector;
-		for (int a = 0; a < ngramML.getValueI(i).size(); a++) {
-			NGram<Word> currentNGram = ngramML.getValueI(i).at(a);
+
+		for (int b = 0; b < a.second.size(); b++) {
+			NGram<Word> currentNGram = a.second[b];
 			string allContent = "";
 			string subject = currentNGram.subject.name;
 
@@ -199,9 +202,8 @@ void MasterResource::saveNGram() {
 			tempVector.push_back(allContent);
 		}
 
-		fileInput.add(ngramML.getKeyI(i), tempVector);
+		fileInput.add(a.first, tempVector);
 	}
-
 
 	for (int i = 0; i < fileInput.size(); i++) {
 		ofstream stream;
@@ -306,13 +308,14 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 				}
 			}
 
-			if (ngramML.containsK(file)) {
-				ngramML.getValueK(file).push_back(newNGram);
+			map<int, vector<NGram<Word>>>::iterator it;
+			if ((it = ngramML.find(file)) != ngramML.end()) {
+				it->second.push_back(newNGram);
 			}
 			else {
 				vector<NGram<Word>> temp;
 				temp.push_back(newNGram);
-				ngramML.add(file, temp);
+				ngramML[file] = temp;
 			}
 
 			return newNGram;
@@ -448,20 +451,19 @@ vector<POS> MasterResource::findAllWordType(string input) {
 Word MasterResource::findWord(string word)
 {
 	int wordSum = stringToInt(word);
-	if (!wordExist(word)) {
-		return findInFile(word, wordSum).subject;
-	}
 
-	int kPos = ngramML.getPostionK(wordSum);
-	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
-		if (ngramML.getValueI(kPos).at(i).subject.name == word) {
-			Word temp = ngramML.getValueI(kPos).at(i).subject;
-			return temp;
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(wordSum)) != ngramML.end()) {
+		vector<NGram<Word>>& words = it->second;
+		for (int i = 0; i < words.size(); i++) {
+			if (words[i].subject.name == word) {
+				return words[i].subject;
+			}
 		}
 	}
 
-	Word defaultWord("not found", POS::Unknown);
-	return defaultWord;
+	return findInFile(word, wordSum).subject;
+
 }
 
 ////////////////////////////////////////////////structure
@@ -602,30 +604,26 @@ NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
 	}
 }//
 
-////////////////////////////////////////////probation
+ ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
 	return findNGramP(word);
 }
 
 NGram<Word>& MasterResource::findNGramP(Word word) {
 	int value = stringToInt(word.name);
-	int kPos = ngramML.getPostionK(value);
 
-	if (!ngramExist(word)) {
-		findInFile(word.name, value);
-		return ngramML.getValueI(kPos).at(ngramML.getValueI(kPos).size() - 1);
-	}
-
-	for (int i = 0; i < ngramML.getValueI(kPos).size(); i++) {
-		if (ngramML.getValueI(kPos).at(i).subject.name == word.name) {
-			return ngramML.getValueI(kPos).at(i);
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(value)) != ngramML.end()) {
+		vector<NGram<Word>>& ngrams = it->second;
+		for (int i = 0; i < ngrams.size(); i++) {
+			if (ngrams[i].subject == word) {
+				return ngrams[i];
+			}
 		}
 	}
-
-	Word w("");
-	NGram<Word> temp(w);
-
-	return temp;
+	else {
+		return 	findInFile(word.name, value);
+	}
 }
 Word MasterResource::findProbationWord(string word) {
 	for (int i = 0; i < probationWord.size(); i++) {
@@ -638,10 +636,12 @@ Word MasterResource::findProbationWord(string word) {
 ////////////////////////////////////////////////////////////////EXIST
 bool MasterResource::wordExist(string word) {
 	int value = stringToInt(word);
-	if (ngramML.containsK(value)) {
-		int pos = ngramML.getPostionK(value);
-		for (int i = 0; i < ngramML.getValueI(pos).size(); i++) {
-			if (ngramML.getValueI(pos).at(i).subject.name == word) {
+
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(value)) != ngramML.end()) {
+		vector<NGram<Word>>& ngrams = it->second;
+		for (int i = 0; i < ngrams.size(); i++) {
+			if (ngrams[i].subject.name == word) {
 				return true;
 			}
 		}
@@ -706,15 +706,17 @@ void MasterResource::findNew(string phrase) {
 					newNGram.subject = newWord;
 
 					int value = stringToInt(newNGram.subject.name);
-					if (ngramML.containsK(value)) {
-						ngramML.getValueK(value).push_back(newNGram);
+					map<int, vector<NGram<Word>>>::iterator it;
+					if ((it = ngramML.find(value)) != ngramML.end()) {
+						it->second.push_back(newNGram);
 					}
 					else {
 						vector<NGram<Word>> temp;
 						temp.push_back(newNGram);
 
-						ngramML.add(value, temp);
+						ngramML[value] = temp;
 					}
+
 					probationWord.deleteIndex(probationWord.getPostionV(newWord));
 				}
 			}
@@ -734,14 +736,18 @@ void MasterResource::updateNGram(Word input, int newOccerence) {
 //////////////////////////////////////////////////////////////////////////DOUBLE
 bool MasterResource::isDouble(string word) {
 	int value = stringToInt(word);
-	bool count = false;
-	int kPos = ngramML.getPostionK(value);
-	for (int i = 0; i < ngramML.getValueI(value).size(); i++) {
-		if (word == ngramML.getValueI(kPos).at(i).subject.name && count == false) {
-			count = true;
-		}
-		else if (count == true && word == ngramML.getValueI(kPos).at(i).subject.name) {
-			return true;
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(value)) != ngramML.end()) {
+		vector<NGram<Word>> possible = it->second;
+		bool exist = false;
+
+		for (int i = 0; i < possible.size(); i++) {
+			if (possible[i].subject.name == word) {
+				exist = true;
+			}
+			else if (possible[i].subject.name == word && exist) {
+				return true;
+			}
 		}
 	}
 
@@ -750,12 +756,15 @@ bool MasterResource::isDouble(string word) {
 vector<POS> MasterResource::doublePossibilities(string word) {
 	vector<POS> answer;
 	int value = stringToInt(word);
-	int kPos = ngramML.getPostionK(value);
-	for (int i = 0; i < ngramML.getValueI(value).size(); i++) {
-		if (word == ngramML.getValueI(kPos).at(i).subject.name) {
-			answer.push_back(ngramML.getValueI(value).at(i).subject.type);
-		}
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(value)) != ngramML.end()) {
+		vector<NGram<Word>> possible = it->second;
 
+		for (int i = 0; i < possible.size(); i++) {
+			if (possible[i].subject.name == word) {
+				answer.push_back(possible[i].subject.type);
+			}
+		}
 	}
 
 	return answer;

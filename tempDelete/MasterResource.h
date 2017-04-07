@@ -9,15 +9,15 @@
 #include "NGram.h"//
 #include <algorithm>
 #include "BreakDown.h"
-#include "NGramWordContainer.h"
 #include <fstream>
+#include <map>
 using namespace std;
 //
 class PredictionEngine;
 
 class MasterResource {
 public:
-	LinkedList<int, vector<NGram<Word>>> ngramML;
+	map<int, vector<NGram<Word>>> ngramML;
 	vector<NGram<SStructure>> sNGramML;
 	LinkedList<int, Word> probationWord;
 	LinkedList<int, SStructure> probationSS;
