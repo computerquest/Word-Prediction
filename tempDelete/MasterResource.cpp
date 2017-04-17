@@ -463,7 +463,6 @@ Word MasterResource::findWord(string word)
 	}
 
 	return findInFile(word, wordSum).subject;
-
 }
 
 ////////////////////////////////////////////////structure
@@ -622,8 +621,23 @@ NGram<Word>& MasterResource::findNGramP(Word word) {
 		}
 	}
 	else {
-		return 	findInFile(word.name, value);
+		NGram<Word> a = findInFile(word.name, value);
+
+		if (a.subject.name != "not found") {
+			vector<NGram<Word>>& ngrams = ngramML.find(value)->second;
+			for (int i = 0; i < ngrams.size(); i++) {
+				if (ngrams[i].subject == word) {
+					return ngrams[i];
+				}
+			}
+		}
 	}
+
+	NGram<Word>* temp = new NGram<Word>();
+	Word defaultWord("not found", POS::Unknown);
+	temp->subject = defaultWord;
+
+	return *temp;
 }
 Word MasterResource::findProbationWord(string word) {
 	for (int i = 0; i < probationWord.size(); i++) {

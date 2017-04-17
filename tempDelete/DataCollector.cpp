@@ -51,11 +51,30 @@ void DataCollector::findData()
 		}
 
 
+		/*NGram<Word>* lastNG = nullptr;
 		for (int b = 0; b < words.size(); b++) {
-			Word word = master->findWord(trimWhite(words.at(b)));
+			NGram<Word>& word = master->findNGramP(trimWhite(words.at(b))); //todo fix this
 
-			if (word.name != "not found") {
-				parts.push_back(word.type);
+			if (word.subject.name != "not found") {
+				parts.push_back(word.subject.type);
+
+				if (b>0) {
+					lastNG->updateSafe(word.subject, 1);
+				}
+
+				lastNG = &word;
+			}
+			else {
+				delete &word;
+				break;
+			}
+		}*/
+
+		for (int b = 0; b < words.size(); b++) {
+			NGram<Word> word = master->findWord(trimWhite(words.at(b))); //todo shouldn't work
+
+			if (word.subject.name != "not found") {
+				parts.push_back(word.subject.type);
 			}
 			else {
 				break;
@@ -102,17 +121,32 @@ void DataCollector::findData()
 			}
 		}
 
-
+		/*NGram<Word>* lastNG = nullptr;
 		for (int b = 0; b < words.size(); b++) {
-			Word word = master->findWord(trimWhite(words.at(b)));
+			NGram<Word>& word = master->findNGramP(trimWhite(words.at(b))); //todo shouldn't work
 
-			if (word.name != "not found") {
-				parts.push_back(word.type);
+			if (word.subject.name != "not found") {
+				parts.push_back(word.subject.type);
+
+				if (b > 0) {
+					lastNG->updateSafe(word.subject, 1);
+				}
+
+				lastNG = &word;
 			}
 			else {
-				/*if (b < words.size() - 1 && master->findWord(words.at(b)).getWord() != "not found") {
-					master->findNGramP(word).updateSafe(master->findWord(words.at(b+1)), 1);
-				}*/
+				delete &word;
+				break;
+			}
+		}*/
+
+		for (int b = 0; b < words.size(); b++) {
+			NGram<Word> word = master->findWord(trimWhite(words.at(b))); //todo shouldn't work
+
+			if (word.subject.name != "not found") {
+				parts.push_back(word.subject.type);
+			}
+			else {
 				break;
 			}
 		}

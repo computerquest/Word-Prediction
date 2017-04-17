@@ -74,9 +74,10 @@ void practicalTest() {
 void dataCollectorTest() {
  	MasterResource master;
 
+	//cout << master.findNGramP("he").subject.name;
+	cout << master.findNGramP(trimWhite("sacrificed")).subject.name; //todo why you work???????
 
-	cout << master.findWord("he").name;
-	cout << master.findWord("sacrificed").name;
+	cout << master.findNGramP(Word("he")).subject.name;
 	//hidden layer numbers
 	vector<int> temprorary;
 	temprorary.push_back(1); //was just 40 originally
@@ -92,7 +93,7 @@ void dataCollectorTest() {
 	DataCollector d("Sherlock.txt");
 	d.master = &master;
 	d.engine = &engine;
-
+	cout << master.findNGramP(trimWhite("sacrificed")).subject.name;
 	//d.read();
 	//d.dialogueFilter();
 	//d.breakExpos();
