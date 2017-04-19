@@ -9,6 +9,7 @@ using namespace std;
 class SStructure {
 public:
 	vector<POS> component;
+	vector<POS> blocks;
 	LinkedList<int, Punctuation> ending; //this is like ngram for the possible endings
 	LinkedList<int, Punctuation> punctuation; //this is the punctuation throughout int is position to insert it 
 	SStructure();
@@ -19,7 +20,7 @@ public:
 	
 	void addItem(POS type);
 
-	void addItems(vector<POS> input);
+	void setComponent(vector<POS> input);
 
 	void addPunctuation(Punctuation p);
 
@@ -28,6 +29,10 @@ public:
 	vector<string> structToString();
 
 	POS getType(int i);
+
+	vector<POS> getBlocks();
+
+	static vector<POS> parseBlocks(vector<POS> blocks);
 };
 
 
