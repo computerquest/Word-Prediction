@@ -3,7 +3,7 @@
 using namespace std;
 
 enum POS{
-	Noun, Verb, Adjective, Conjuction, Preposition, Article, Unknown
+	Noun, Verb, Adjective, Conjuction, Preposition, Article, Adverb, Unknown, Unique
 };
 
 POS toType(string type);

@@ -112,10 +112,13 @@ void dataCollectorTest() {
 	//engine.createTraining();
 }
 
+
+
 int main()
 {
-	dataCollectorTest();
-
+	//dataCollectorTest();
+	MasterResource m;
+	m.readNGram();
 	cout << "end" << endl;
 	return 0;
 }

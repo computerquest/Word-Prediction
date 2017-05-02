@@ -4,6 +4,7 @@
 #include "LinkedList.h"
 #include "POS.h"
 #include <iostream>
+#include "Punctuation.h"
 using namespace std;
 
 vector<string> breakDownV(string phrase);

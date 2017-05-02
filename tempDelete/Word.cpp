@@ -4,7 +4,7 @@ using namespace std;
 
 
 bool Word::operator==(Word leftside) {
-	if (leftside.name == name) {
+	if (leftside.name == name && type == leftside.type) {
 		return true;
 	}
 	else {

@@ -8,6 +8,7 @@ class Word {
 public:
 	string name;
 	POS type;
+	string ending;
 
 	bool operator==(Word leftside);
 	

@@ -221,59 +221,68 @@ void MasterResource::readNGram() {
 	vector<char> delimeter;
 	delimeter.push_back('|');
 
+	//ex: 24|a|bona-fide|at1|jj
 	vector<vector<string>> input = fileInput("NGrams.txt", delimeter);
 
 	std::cout << "creating words" << endl;
 
-	LinkedList<int, LinkedList<string, string>> data;
+	map<int, LinkedList<string, string>> data;
 	for (int i = 0; i < input.size(); i++) {
-		cout << i << endl;
-		POS type;
-		POS type1;
+		std::cout << i << endl;
+		string type;
+		string type1;
 
-		if ((type = decypherType(input.at(i).at(3))) == POS::Unknown | (type1 = decypherType(input.at(i).at(4))) == POS::Unknown) {
+		if ((type = decypherType(input.at(i).at(3))) == "unknown" | (type1 = decypherType(input.at(i).at(4))) == "unknown") {
 			continue;
 		}
 
 		string name = input.at(i).at(1);// +";" + POStoString(type) + "|";
 
-		int value = 0;
-		for (int a = 0; a < name.length(); a++) {
-			value += name[a];
-		}
+		string search = input[i].at(1) + "*"+ type;
 
-		if (data.containsK(value)) {
-			int valueIndex = data.getPostionK(value);
+		int value = stringToInt(name);
 
-			if (data.getValueI(valueIndex).containsK(name)) {
-				int nameIndex = data.getValueI(valueIndex).getPostionK(name);
-				LinkedList<string, string> dataValue = data.getValueI(valueIndex);
+		map<int, LinkedList<string, string>>::iterator it;
+		//if we have that number already
+		if ((it = data.find(value)) != data.end()) {
 
-				string newInfo = input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
-				dataValue.changeValueI(nameIndex, data.getValueI(valueIndex).getValueI(nameIndex) + newInfo);
+			//if we already have that
+			if (it->second.containsK(search)) {
+				LinkedList<string, string>& dataValue = it->second;
+				int nameIndex = dataValue.getPostionK(search);
 
-				data.changeValueI(valueIndex, dataValue);
+				string newInfo = input.at(i).at(0) + "," + input.at(i).at(2) + "," + type + "|";
+				dataValue.changeValueI(nameIndex, it->second.getValueI(nameIndex) + newInfo);
 			}
 			else {
-				string newInfo = name + "|" + POStoString(type) + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
-				LinkedList<string, string> dataValue = data.getValueI(valueIndex);
+				string newInfo = name + "|" + type + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + type + "|";
+				LinkedList<string, string>& dataValue = it->second;
 
-				dataValue.add(name, newInfo);
-				data.changeValueI(valueIndex, dataValue);
+				dataValue.add(search, newInfo);
 			}
 		}
 		else {
-			string newInfo = name + "|" + POStoString(type) + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + POStoString(type1) + "|";
+			string newInfo = name + "|" + type + "|" + input.at(i).at(0) + "," + input.at(i).at(2) + "," + type1 + "|";
 			LinkedList<string, string> newLL;
 
-			newLL.add(name, newInfo);
-			data.add(value, newLL);
+			newLL.add(search, newInfo);
+
+			data[value] = newLL;
 		}
 	}
 
 	cout << "writing" << endl;
 
-	for (int i = 0; i < data.size(); i++) {
+
+	for (auto &it:data) {
+		ofstream stream;
+		stream.open(to_string(it.first) + ".txt", ios::trunc);
+		for (int i = 0; i < it.second.size(); i++) {
+			stream << it.second.getValueI(i) << endl;
+		}
+	}
+	//writes this all back to files 
+	/*for (int i = 0; i < data.size(); i++) {
 		ofstream stream;
 		stream.open(to_string(data.getKeyI(i)) + ".txt", ios::trunc);
 
@@ -282,7 +291,7 @@ void MasterResource::readNGram() {
 		}
 
 		stream.close();
-	}
+	}*/
 }
 
 NGram<Word> MasterResource::findInFile(string search, int file) {
@@ -327,33 +336,47 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 	defaultNG.subject = defaultWord;
 	return defaultNG;
 }
-POS MasterResource::decypherType(string secondType) {
-	if (secondType.find("np") != std::string::npos | secondType.find("nn") != std::string::npos | secondType == "appge" |
-		secondType.find("pn") != std::string::npos | secondType.find("pp") != std::string::npos |
-		secondType.find("nd") != std::string::npos | secondType.find("z") != std::string::npos) {
-		return POS::Noun;
+string MasterResource::decypherType(string secondType) {
+	if (secondType == "appge" || secondType.find("db") != string::npos || secondType.find("dd") != string::npos || secondType == "ex" || secondType.find("nn") || secondType.find("np") != string::npos || secondType.find("np") != string::npos || secondType.find("pn") != string::npos || secondType.find("pp") != string::npos || secondType == "zz2") {
+		return "noun";
 	}
 	else if (secondType.find("at") != std::string::npos) {
-		return POS::Article;
+		return "article";
 	}
-	else if (secondType.find("cs") != std::string::npos | secondType.find("cc") != std::string::npos | secondType == "bcl") {
-		return POS::Conjuction;
+	else if (secondType.find("cs") != std::string::npos || secondType.find("cc") != std::string::npos || secondType == "bcl") {
+		return "conjunction";
 	}
-	else if (secondType.find("da") != std::string::npos | secondType == "to" | secondType.find("i") != std::string::npos |
-		secondType.find("dd") != std::string::npos | secondType.find("db") != std::string::npos) {
-		return POS::Preposition;
+	else if (secondType == "if" || secondType == "ii" || secondType == "io" || secondType == "iw" || secondType == "to" || secondType == "vb0" || secondType == "vbdz" || secondType == "vbg" || secondType == "vbi" || secondType == "rp" || secondType == "rpk") {
+		return "preposition";
 	}
 
-	else if (secondType.find("j") != std::string::npos |
-		secondType.find("r") != std::string::npos & secondType.find("b") == std::string::npos | secondType.find("x") != std::string::npos) {
-		return POS::Adjective;
+	else if (secondType.find("jj") != std::string::npos || secondType.find("mc") != string::npos) {
+		return "adjective";
 	}
-	else if (secondType.find("v") != std::string::npos) {
-		return POS::Verb;
+	else if (secondType == "ra" || secondType.find("da") != string::npos || secondType == "rex" || secondType == "rg" || secondType == "rgqv" || secondType == "rgr" || secondType == "rgt" || secondType == "rr" || secondType == "rrr" || secondType == "rrt" || secondType == "rrqv" || secondType == "xx") {
+		return "adverb";
 	}
-	else
-	{
-		return POS::Unknown;
+	else if (secondType.find("vv") != std::string::npos || secondType.find("vm") || secondType == "vd" || secondType.find("vh") != string::npos) {
+		string ext = "";
+		if (secondType == "vv0") {
+			ext = "/pres";
+		}
+		else if (secondType == "vvd") {
+			ext = "/pas";
+		}
+		else if (secondType.find("vvg") != string::npos) {
+			ext = "/do";
+		}
+		else if (secondType.find("vvz") != string::npos) {
+			ext = "/theo";
+		}
+		return "verb"+ext;
+	}
+	else if (secondType.find("vb") != std::string::npos || secondType.find("ddq") != std::string::npos || secondType == "rgq" || secondType == "rrq" || secondType == "uh" || secondType == "vbdr") {
+		return "unique";
+	}
+	else {
+		return "unknown";
 	}
 }
 

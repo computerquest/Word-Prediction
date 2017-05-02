@@ -71,10 +71,14 @@ string trimWhite(string s) {
 	return s;
 }
 
+//blocks is the typers of the words
+//no placeholders for punctuation
+//it all about finding where parts of the sentence fit
+//todo testing
 LinkedList<POS, int> posToBlocks(vector<string> wordStrings, vector<POS> blocks)
 {
 	LinkedList<POS, int> typeBlocks;
-	int startIndex = 0; //the next available thing to add it is 0 based
+	/*int startIndex = 0; //the next available thing to add it is 0 based
 	bool articleIndex = false;
 	for (int i = 0; i < blocks.size(); i++) {
 		if (blocks[i] == POS::Article) {
@@ -227,6 +231,95 @@ LinkedList<POS, int> posToBlocks(vector<string> wordStrings, vector<POS> blocks)
 			}
 			else if (i + 1 < typeBlocks.size() && typeBlocks.getKeyI(i + 1) == POS::Verb) {
 				typeBlocks.changeValueI(i + 1, typeBlocks.getValueI(i));
+				typeBlocks.deleteIndex(i);
+			}
+		}
+	}
+	*/
+	//this creates the typeblocks
+	
+	for (int i = 0; i < blocks.size(); i++) {
+		typeBlocks.add(blocks[i], i);
+	}
+
+	//deletes joining words by looking for conjunctions without punctuation and deleting them from the blocks
+	for (int i = 0; i < wordStrings.size(); i++) {
+		if (stringToPunctuation(wordStrings[i]) != Punctuation::UNDEFINED) {
+			continue;
+		}
+
+		if (typeBlocks.getKeyI(i) == Conjuction) {
+			if (stringToPunctuation(wordStrings[i - 1]) != Punctuation::UNDEFINED) {
+				typeBlocks.deleteIndex(typeBlocks.getPostionV(i));
+				continue;
+			}
+		}
+	}
+
+	//joins adverbs with either verbs (1st priority) or adjectives
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		if (typeBlocks.getKeyI(i) == Adverb) {
+			if (i > 0 && typeBlocks.getKeyI(i - 1) == Verb) {
+				typeBlocks.changeKeyI(i, Verb);
+				typeBlocks.deleteIndex(i - 1);
+			}
+			else if (i < typeBlocks.size()-1 && typeBlocks.getKeyI(i + 1) == Verb) {
+				typeBlocks.deleteIndex(i);
+			}
+			else if (i < typeBlocks.size() - 1 && typeBlocks.getKeyI(i + 1) == Adjective) {
+				typeBlocks.deleteIndex(i);
+			}
+			else if (i > 0 && typeBlocks.getKeyI(i - 1) == Adjective) {
+				typeBlocks.changeKeyI(i, Adjective);
+				typeBlocks.deleteIndex(i - 1);
+			}
+		}
+	}
+
+
+
+	//this removes all the doubles
+	for (int i = 0; i < typeBlocks.size() - 1; i++) {
+		if (typeBlocks.getKeyI(i) == typeBlocks.getKeyI(i+1)) {
+			typeBlocks.deleteIndex(i+1);
+		}
+	}
+
+	//create noun blocks
+	int startPos = -1;
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		if (typeBlocks.getKeyI(i) == Article) {
+			startPos = i;
+		}
+		else if (startPos == -1 && typeBlocks.getKeyI(i) == Noun) { //check for something like: his fat cat
+			for (int a = i + 1; a < typeBlocks.size(); a++) {
+				if (typeBlocks.getKeyI(a) != Noun & typeBlocks.getKeyI(a) != Adjective) {
+					break;
+				}
+				else if (typeBlocks.getKeyI(a) == Noun) {
+					for (int b = i; b< a; b++) {
+						typeBlocks.deleteIndex(i);
+					}
+				}
+			}
+		}
+		else if (startPos != -1 & typeBlocks.getKeyI(i) == Noun) { //checks for: the fat cat
+			for (int a = startPos; a < i; a++) {
+				typeBlocks.deleteIndex(startPos);
+			}
+
+			startPos = -1;
+		}
+	}
+	
+	//verb blocks
+	for (int i = 0; i < typeBlocks.size(); i++) {
+		if (typeBlocks.getKeyI(i) == Verb) {
+			if (i > 0 && typeBlocks.getKeyI(i) == Adjective) {
+				typeBlocks.deleteIndex(i-1);
+			}
+			else if (i < typeBlocks.size() - 1 && typeBlocks.getKeyI(i + 1) == Adjective) {
+				typeBlocks.changeKeyI(i+1, Verb);
 				typeBlocks.deleteIndex(i);
 			}
 		}

@@ -23,6 +23,12 @@ POS toType(string type) {
 	else if (type == "article") {
 		return POS::Article;
 	}
+	else if (type == "adverb") {
+		return POS::Adverb;
+	}
+	else if (type == "unique") {
+		return POS::Unique;
+	}
 }
 
 string POStoString(POS typeInput) {
@@ -46,6 +52,12 @@ string POStoString(POS typeInput) {
 	}
 	else if (typeInput == POS::Article) {
 		return "article";
+	}
+	else if (typeInput == POS::Adverb) {
+		return "adverb";
+	}
+	else if (typeInput == POS::Unique) {
+		return "unique";
 	}
 }
 
@@ -72,6 +84,12 @@ int POStoInt(POS typeInput)
 	else if (typeInput == POS::Article) {
 		return 6;
 	}
+	else if (typeInput == POS::Adverb) {
+		return 7;
+	}
+	else if (typeInput == POS::Unique) {
+		return 8;
+	}
 }
 
 POS intToPOS(int i)
@@ -96,5 +114,11 @@ POS intToPOS(int i)
 	}
 	else if (i == 6) {
 		return Article;
+	}
+	else if (i == 7) {
+		return Adverb;
+	}
+	else if (i == 8) {
+		return Unique;
 	}
 }

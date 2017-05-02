@@ -58,7 +58,7 @@ public:
 	NGram<Word>& findNGramP(Word word);
 
 	NGram<Word> findInFile(string search, int file);
-	POS decypherType(string secondType);
+	string decypherType(string secondType);
 
 	////////////////////////////////////////////////////////////////exist
 	bool sstructureExist(vector<POS> order);
