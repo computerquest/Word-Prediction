@@ -18,7 +18,7 @@ class PredictionEngine;
 class MasterResource {
 public:
 	map<int, vector<NGram<Word>>> ngramML;
-	vector<NGram<SStructure>> sNGramML;
+	map<int, vector<NGram<SStructure>>> sNGramML;
 	LinkedList<int, Word> probationWord;
 	LinkedList<int, SStructure> probationSS;
 	PredictionEngine* engine;
@@ -39,20 +39,18 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////find
 	vector<POS> findAllWordType(string input);
-	Word findWord(string word);
+	vector<Word> findWord(string word);
 	//Word findDouble(string phrase, string target);
-	SStructure findPartailStructure(vector<POS> order);
 
-	SStructure& findStructurePercisionP(vector<POS> order);
+	SStructure& findStructurePercision(vector<POS> order);
 
-	Word findProbationWord(string word);
+	vector<Word> findProbationWord(string word);
 
 	vector<SStructure> matchPossibleSS(vector<POS> input);
-	SStructure findStructurePercision(vector<POS> order);
-	SStructure findPartailStructure(vector<POS> order, int missing);
+	vector<SStructure> findPartailStructure(vector<POS> order, int missing); //looks for strucutres that could match from one that has a gap
+	vector<SStructure> findPartailStructure(vector<POS> order); //looks for strucutres that partially fit from the beginning
 
-	NGram<SStructure>& findNGramSS(vector<POS> order);
-	NGram<SStructure> findNGramS(vector<POS> parts);
+	vector<NGram<SStructure>*> findNGramSS(vector<POS> order);
 
 	NGram<Word> findNGram(Word word);
 	NGram<Word>& findNGramP(Word word);

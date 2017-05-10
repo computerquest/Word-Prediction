@@ -87,30 +87,33 @@ vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> d
 void MasterResource::saveStruct() {
 	ofstream stream;
 	stream.open("sNGram.txt", ios::trunc);
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
+	for (auto s : sNGramML) {
+		for (int i = 0; i < s.second.size(); i++) {
+			vector<POS> current = s.second.at(i).subject.component;
 
-		for (int a = 0; a < current.size(); a++) {
-			stream << POStoString(current.at(a)) << "|";
-		}
+			for (int a = 0; a < current.size(); a++) {
+				stream << POStoString(current.at(a)) << "|";
+			}
 
-		if (sNGramML.at(i).content.size() > -1) {
-			LinkedList<int, SStructure> currentContent = sNGramML.at(i).content;
-			for (int b = 0; b < currentContent.size(); b++) {
-				stream << "-" << std::to_string(currentContent.getKeyI(b)) << ",";
+			if (s.second.at(i).content.size() > -1) {
+				LinkedList<int, SStructure> currentContent = s.second.at(i).content;
+				for (int b = 0; b < currentContent.size(); b++) {
+					stream << "-" << std::to_string(currentContent.getKeyI(b)) << ",";
 
-				vector<POS> sCurrentContent = currentContent.getValueI(b).component;
+					vector<POS> sCurrentContent = currentContent.getValueI(b).component;
 
-				for (int a = 0; a < sCurrentContent.size(); a++) {
-					stream << POStoString(sCurrentContent.at(a)) << "|";
+					for (int a = 0; a < sCurrentContent.size(); a++) {
+						stream << POStoString(sCurrentContent.at(a)) << "|";
+					}
 				}
 			}
+			stream << endl;
 		}
-		stream << endl;
 	}
 	stream.close();
 }
 void MasterResource::readStruct() {
+	vector<NGram<SStructure>> temp;
 	{
 		vector<char> delimeters;
 		delimeters.push_back('|');
@@ -129,7 +132,7 @@ void MasterResource::readStruct() {
 
 			newNGram.subject = structure;
 
-			sNGramML.push_back(newNGram);
+			temp.push_back(newNGram);
 		}
 	}
 
@@ -142,7 +145,7 @@ void MasterResource::readStruct() {
 		for (int i = 0; i < partialInput.size(); i++) {
 			vector<string> line = partialInput.at(i);
 
-			NGram<SStructure>* current = &sNGramML.at(i);
+			NGram<SStructure>* current = &(temp.at(i));
 
 			LinkedList<int, SStructure> content;
 			int firstIndex = -1;
@@ -180,6 +183,10 @@ void MasterResource::readStruct() {
 			}
 			current->content = content;
 		}
+	}
+
+	for (NGram<SStructure> t : temp) {
+		sNGramML[t.content.size()].push_back(t);
 	}
 }
 
@@ -238,7 +245,7 @@ void MasterResource::readNGram() {
 
 		string name = input.at(i).at(1);// +";" + POStoString(type) + "|";
 
-		string search = input[i].at(1) + "*"+ type;
+		string search = input[i].at(1) + "*" + type;
 
 		int value = stringToInt(name);
 
@@ -274,7 +281,7 @@ void MasterResource::readNGram() {
 	cout << "writing" << endl;
 
 
-	for (auto &it:data) {
+	for (auto &it : data) {
 		ofstream stream;
 		stream.open(to_string(it.first) + ".txt", ios::trunc);
 		for (int i = 0; i < it.second.size(); i++) {
@@ -370,7 +377,7 @@ string MasterResource::decypherType(string secondType) {
 		else if (secondType.find("vvz") != string::npos) {
 			ext = "/theo";
 		}
-		return "verb"+ext;
+		return "verb" + ext;
 	}
 	else if (secondType.find("vb") != std::string::npos || secondType.find("ddq") != std::string::npos || secondType == "rgq" || secondType == "rrq" || secondType == "uh" || secondType == "vbdr") {
 		return "unique";
@@ -462,7 +469,7 @@ vector<POS> MasterResource::findAllWordType(string input) {
 		if (wordExist(wordS.at(i))) {
 		}
 		else if (probationExistWord(wordS.at(i))) {
-			answer.push_back(findProbationWord(currentWord).type);
+			//answer.push_back(findProbationWord(currentWord).type);
 		}
 		else {
 			answer.push_back(POS::Unknown);
@@ -471,69 +478,62 @@ vector<POS> MasterResource::findAllWordType(string input) {
 
 	return answer;
 }
-Word MasterResource::findWord(string word)
+vector<Word> MasterResource::findWord(string word)
 {
+	vector<Word> answer;
+
 	int wordSum = stringToInt(word);
 
 	map<int, vector<NGram<Word>>>::iterator it;
 	if ((it = ngramML.find(wordSum)) != ngramML.end()) {
 		vector<NGram<Word>>& words = it->second;
 		for (int i = 0; i < words.size(); i++) {
-			if (words[i].subject.name == word) {
-				return words[i].subject;
+			while (words[i].subject.name == word) {
+				answer.push_back(words[i].subject);
+				i++;
+			}
+
+			if (answer.size() > 0) {
+				return answer;
 			}
 		}
 	}
 
-	return findInFile(word, wordSum).subject;
+	return answer;
 }
 
 ////////////////////////////////////////////////structure
 vector<SStructure> MasterResource::matchPossibleSS(vector<POS> input) {
 	vector<SStructure> match;
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> components = sNGramML.at(i).subject.component;
+	for (auto s : sNGramML) {
+		for (int i = 0; i < s.second.size(); i++) {
+			vector<POS> components = s.second.at(i).subject.component;
 
-		if (components.size() >= input.size()) {
-			bool answer = true;
-			for (int a = 0; a < input.size(); a++) {
-				if (input.at(a) != components.at(a) && input.at(a) != POS::Unknown) {
-					answer = false;
-					break;
+			if (components.size() >= input.size()) {
+				bool answer = true;
+				for (int a = 0; a < input.size(); a++) {
+					if (input.at(a) != components.at(a) && input.at(a) != POS::Unknown) {
+						answer = false;
+						break;
+					}
+				}
+
+				if (answer == true) {
+					match.push_back(s.second.at(i).subject);
 				}
 			}
-
-			if (answer == true) {
-				match.push_back(sNGramML.at(i).subject);
+			else {
+				continue;
 			}
 		}
-		else {
-			continue;
-		}
 	}
-
 	return match;
 }
-SStructure MasterResource::findStructurePercision(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
-		bool solution = true;
-		if (current.size() == order.size()) {
-			for (int a = 0; a < order.size(); a++) {
-				if (current.at(a) != order.at(a)) {
-					solution = false;
-					break;
-				}
-			}
-			if (solution == true) {
-				return sNGramML.at(i).subject;
-			}
-		}
-	}
-}
-SStructure MasterResource::findPartailStructure(vector<POS> order, int missing) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
+vector<SStructure> MasterResource::findPartailStructure(vector<POS> order, int missing) {
+	vector<SStructure> ans;
+	vector<NGram<SStructure>> s = sNGramML[order.size()];
+	for (int i = 0; i < s.size(); i++) {
+		vector<POS> current = s.at(i).subject.component;
 
 		if (current.size() == order.size()) {
 			bool solution = true;
@@ -548,40 +548,47 @@ SStructure MasterResource::findPartailStructure(vector<POS> order, int missing) 
 			}
 
 			if (solution == true) {
-				return sNGramML.at(i).subject;
-			}
-		}
-	}
-}
-SStructure MasterResource::findPartailStructure(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
-		bool correct = true;
-		if (current.size() == order.size()) {
-			for (int a = 0; a < current.size(); a++) {
-				if (order.at(a) == POS::Unknown) {
-					continue;
-				}
-				else if (current.at(a) != order.at(a)) {
-					correct = false;
-					break;
-				}
-			}
-
-			if (correct == true) {
-				return current;
+				ans.push_back(s.at(i).subject);
 			}
 		}
 	}
 
-	SStructure defaultStruct;
-	defaultStruct.component.push_back(POS::Unknown);
-
-	return defaultStruct;
+	return ans;
 }
-SStructure& MasterResource::findStructurePercisionP(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
+vector<SStructure> MasterResource::findPartailStructure(vector<POS> order) {
+	vector<SStructure> ans;
+
+	for (auto s : sNGramML) {
+		if (s.first < order.size()) {
+			continue;
+		}
+
+		for (int i = 0; i < s.second.size(); i++) {
+			vector<POS> current = s.second.at(i).subject.component;
+			bool correct = true;
+			if (current.size() == order.size()) {
+				for (int a = 0; a < current.size(); a++) {
+					if (order.at(a) == POS::Unknown) {
+						continue;
+					}
+					else if (current.at(a) != order.at(a)) {
+						correct = false;
+						break;
+					}
+				}
+
+				if (correct == true) {
+					ans.push_back(current);
+				}
+			}
+		}
+	}
+	return ans;
+}
+SStructure& MasterResource::findStructurePercision(vector<POS> order) {
+	vector<NGram<SStructure>>& a = sNGramML[order.size()];
+	for (int i = 0; i < a.size(); i++) {
+		vector<POS> current = a.at(i).subject.component;
 		bool solution = true;
 		if (current.size() == order.size()) {
 			for (int a = 0; a < order.size(); a++) {
@@ -591,42 +598,40 @@ SStructure& MasterResource::findStructurePercisionP(vector<POS> order) {
 				}
 			}
 			if (solution == true) {
-				return sNGramML.at(i).subject;
+				return a.at(i).subject;
 			}
 		}
 	}
 }
 /////////////////////////////////////ngram
-NGram<SStructure>& MasterResource::findNGramSS(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		vector<POS> current = sNGramML.at(i).subject.component;
+vector<NGram<SStructure>*> MasterResource::findNGramSS(vector<POS> order) {
+	map<int, vector<NGram<SStructure>>>::iterator it = sNGramML.find(order.size());
+	if (it == sNGramML.end()) {
+		return;
+	}
 
-		if (current.size() == order.size()) {
-			bool correct = true;
-			for (int b = 0; b < current.size(); b++) {
-				if (current.at(b) != order.at(b)) {
-					correct = false;
-					break;
-				}
-			}
+	vector<NGram<SStructure>>& search = it->second;
+	vector<NGram<SStructure>*> ans;
+	for (int i = 0; i < search.size(); i++) {
+		vector<POS> current = search.at(i).subject.component;
 
-			if (correct == true) {
-				return sNGramML.at(i);
+		bool correct = true;
+		for (int b = 0; b < current.size(); b++) {
+			if (current.at(b) != order.at(b)) {
+				correct = false;
+				break;
 			}
 		}
+
+		if (correct == true) {
+			ans.push_back(&(search.at(i)));
+		}
 	}
+
+	return ans;
 }
-NGram<SStructure> MasterResource::findNGramS(vector<POS> parts) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		if (sNGramML.at(i).subject.component.size() == parts.size()) {
-			if (parts == sNGramML.at(i).subject.component) {
-				return sNGramML.at(i);
-			}
-		}
-	}
-}//
 
- ////////////////////////////////////////////probation
+////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
 	return findNGramP(word);
 }
@@ -662,12 +667,15 @@ NGram<Word>& MasterResource::findNGramP(Word word) {
 
 	return *temp;
 }
-Word MasterResource::findProbationWord(string word) {
+vector<Word> MasterResource::findProbationWord(string word) {
+	vector<Word> ans;
 	for (int i = 0; i < probationWord.size(); i++) {
 		if (probationWord.getValueI(i).name == word) {
-			return probationWord.getValueI(i);
+			ans.push_back(probationWord.getValueI(i));
 		}
 	}
+
+	return ans;
 }
 
 ////////////////////////////////////////////////////////////////EXIST
@@ -695,8 +703,14 @@ bool MasterResource::ngramExist(string word) {
 }
 
 bool MasterResource::sstructureExist(vector<POS> order) {
-	for (int i = 0; i < sNGramML.size(); i++) {
-		if (sNGramML.at(i).subject.component == order) {
+	map<int, vector<NGram<SStructure>>>::iterator it = sNGramML.find(order.size());
+	if (it == sNGramML.end()) {
+		return false;
+	}
+
+	vector<NGram<SStructure>> ans = it->second;
+	for (int i = 0; i < ans.size(); i++) {
+		if (ans.at(i).subject.component == order) {
 			return true;
 		}
 	}
