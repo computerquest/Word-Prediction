@@ -1,6 +1,6 @@
 #include "MasterResource.h"
 #include "PredictionEngine.h"
-
+using namespace std;
 //todo make sure can return doubles based on string
 //todo upgrade file system?
 //todo UNDO CHANGES
@@ -95,23 +95,25 @@ void MasterResource::saveStruct() {
 				stream << POStoString(current.at(a)) << "|";
 			}
 
-			if (s.second.at(i).content.size() > -1) {
-				LinkedList<int, SStructure> currentContent = s.second.at(i).content;
+			for (auto it : s.second.at(i).content) {
+				vector<SStructure>& currentContent = it.second;
 				for (int b = 0; b < currentContent.size(); b++) {
-					stream << "-" << std::to_string(currentContent.getKeyI(b)) << ",";
+					stream << "-" << std::to_string(it.first) << ",";
 
-					vector<POS> sCurrentContent = currentContent.getValueI(b).component;
+					vector<POS> sCurrentContent = currentContent.at(b).component;
 
 					for (int a = 0; a < sCurrentContent.size(); a++) {
 						stream << POStoString(sCurrentContent.at(a)) << "|";
 					}
 				}
 			}
-			stream << endl;
 		}
+		stream << endl;
+
 	}
 	stream.close();
 }
+
 void MasterResource::readStruct() {
 	vector<NGram<SStructure>> temp;
 	{
@@ -147,7 +149,7 @@ void MasterResource::readStruct() {
 
 			NGram<SStructure>* current = &(temp.at(i));
 
-			LinkedList<int, SStructure> content;
+			map<int, vector<SStructure>> content;
 			int firstIndex = -1;
 			int secondIndex = line.size() - 1;
 			for (int a = 0; a < line.size(); a++) {
@@ -165,7 +167,7 @@ void MasterResource::readStruct() {
 						}
 
 
-						content.add(abs(stoi(line.at(firstIndex))), findStructurePercision(temp));
+						content[abs(stoi(line.at(firstIndex)))].push_back(findStructurePercision(temp));
 						firstIndex = secondIndex;
 						secondIndex = line.size() - 1;
 
@@ -179,7 +181,7 @@ void MasterResource::readStruct() {
 					temp.push_back(toType(line.at(c)));
 				}
 
-				content.add(abs(stoi(line.at(firstIndex))), findStructurePercision(temp));
+				content[abs(stoi(line.at(firstIndex)))].push_back(findStructurePercision(temp));
 			}
 			current->content = content;
 		}
@@ -202,10 +204,12 @@ void MasterResource::saveNGram() {
 			string subject = currentNGram.subject.name;
 
 			allContent += subject + "," + POStoString(currentNGram.subject.type) + "|";
-			for (int a = 0; a < currentNGram.content.size(); a++) {
-				allContent += to_string(currentNGram.content.getKeyI(a)) + "," + currentNGram.content.getValueI(a).name + "," + POStoString(currentNGram.content.getValueI(a).type) + "|";
+			for (auto it : currentNGram.content) {
+				int k = it.first;
+				for (int i = 0; i < it.second.size(); i++) {
+					allContent += to_string(k) + "," + it.second.at(i).name + "," + POStoString(it.second.at(i).type) + "|";
+				}
 			}
-
 			tempVector.push_back(allContent);
 		}
 
@@ -278,7 +282,7 @@ void MasterResource::readNGram() {
 		}
 	}
 
-	cout << "writing" << endl;
+	std::cout << "writing" << endl;
 
 
 	for (auto &it : data) {
@@ -320,7 +324,7 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 				for (int b = 0; b < secondaryVector.size(); b++) {
 					Word secondaryTempWord(secondaryVector.at(1), toType(secondaryVector.at(2)));
 
-					newNGram.content.add(stoi(secondaryVector.at(0)), secondaryTempWord);
+					newNGram.updateSafe(secondaryTempWord, stoi(secondaryVector.at(0)));
 				}
 			}
 
@@ -607,7 +611,7 @@ SStructure& MasterResource::findStructurePercision(vector<POS> order) {
 vector<NGram<SStructure>*> MasterResource::findNGramSS(vector<POS> order) {
 	map<int, vector<NGram<SStructure>>>::iterator it = sNGramML.find(order.size());
 	if (it == sNGramML.end()) {
-		return;
+		return vector<NGram<SStructure>*>();
 	}
 
 	vector<NGram<SStructure>>& search = it->second;
@@ -634,6 +638,49 @@ vector<NGram<SStructure>*> MasterResource::findNGramSS(vector<POS> order) {
 ////////////////////////////////////////////probation
 NGram<Word> MasterResource::findNGram(Word word) {
 	return findNGramP(word);
+}
+
+vector<NGram<Word>> MasterResource::findNGram(string word)
+{
+	vector<NGram<Word>*> ans = findNGramP(word);
+	vector<NGram<Word>> dAns;
+
+	for (int i = 0; i < ans.size(); i++) {
+		dAns.push_back(*ans[i]);
+	}
+
+	return dAns;
+}
+
+//could change to search until word not the same (cut down iterations)
+vector<NGram<Word>*> MasterResource::findNGramP(string word)
+{
+	int value = stringToInt(word);
+	vector <NGram<Word>*> ans;
+
+	map<int, vector<NGram<Word>>>::iterator it;
+	if ((it = ngramML.find(value)) != ngramML.end()) {
+		vector<NGram<Word>>& ngrams = it->second;
+		for (int i = 0; i < ngrams.size(); i++) {
+			if (ngrams[i].subject.name == word) {
+				ans.push_back(&ngrams[i]);
+			}
+		}
+	}
+	else {
+		NGram<Word> a = findInFile(word, value);
+
+		if (a.subject.name != "not found") {
+			vector<NGram<Word>>& ngrams = ngramML.find(value)->second;
+			for (int i = 0; i < ngrams.size(); i++) {
+				if (ngrams[i].subject == word) {
+					ans.push_back(&ngrams[i]);
+				}
+			}
+		}
+	}
+
+	return ans;
 }
 
 NGram<Word>& MasterResource::findNGramP(Word word) {
@@ -666,6 +713,40 @@ NGram<Word>& MasterResource::findNGramP(Word word) {
 	temp->subject = defaultWord;
 
 	return *temp;
+}
+Word MasterResource::findWordContext(Word last, string current)
+{
+	NGram<Word>& word = findNGram(last);
+	vector<Word> possible = findWord(current);
+	
+	int greatest = -1;
+	int greatestPos = 0;
+	for (int i = 0; i < possible.size(); i++) {
+		int val = word.findValue(possible[i]);
+
+		if (val > greatest) {
+			greatest = val;
+			greatestPos = i;
+		}
+	}
+	return possible[greatestPos];
+}
+NGram<Word> MasterResource::findWordContextNG(Word last, string current)
+{
+	NGram<Word>& word = findNGram(last);
+	vector<NGram<Word>> possible = findNGram(current);
+
+	int greatest = -1;
+	int greatestPos = 0;
+	for (int i = 0; i < possible.size(); i++) {
+		int val = word.findValue(possible[i].subject);
+
+		if (val > greatest) {
+			greatest = val;
+			greatestPos = i;
+		}
+	}
+	return possible[greatestPos];
 }
 vector<Word> MasterResource::findProbationWord(string word) {
 	vector<Word> ans;
@@ -739,7 +820,7 @@ bool MasterResource::probationExistSS(vector<POS> input) {
 }
 
 ////////////////////////////////////////////////////////////////////////MISC
-void MasterResource::findNew(string phrase) {
+/*void MasterResource::findNew(string phrase) {
 	vector<string> words = breakDownV(phrase);
 	vector<POS> newFoundPOS = engine->multipleMissing(phrase);
 	int newFoundPOSI = 0;
@@ -777,7 +858,7 @@ void MasterResource::findNew(string phrase) {
 		}
 	}
 
-};
+};*/
 void MasterResource::updateNGram(Word input, int newOccerence) {
 	NGram<Word> ngram = findNGramP(input);
 
@@ -820,29 +901,26 @@ vector<POS> MasterResource::doublePossibilities(string word) {
 
 	return answer;
 }
-POS MasterResource::findDouble(string phrase, string target) {
-	vector<POS> possible = doublePossibilities(target);
+Word MasterResource::findDouble(Word before, string target) {
+	if (before.name == "not found") {
+		vector<Word> possible = findWord(target);
 
-	LinkedList<POS, double> values;
-	for (int i = 0; i < possible.size(); i++) {
-		//engine->chooseDouble(phrase, target);
-
-		//values.add(possible.at(i).type, engine->nn.neuralNetwork.at(engine->nn.neuralNetwork.size() - 1).at(possible.at(i).type).value);
+		return possible[0];
 	}
+	vector<Word> possible = findWord(target);
 
-	double greatest = 0;
-	POS type;
-	for (int i = 0; i < values.size(); i++) {
-		if (values.getValueI(i) > greatest) {
-			type = values.getKeyI(i);
-			greatest = values.getValueI(i);
+	NGram<Word> ngram = findNGram(before);
+
+	int greatest = -1;
+	int index = 0;
+	for (int i = 0; i < possible.size(); i++) {
+		int a = ngram.findValue(possible.at(i));
+
+		if (a > greatest) {
+			greatest = a;
+			index = i;
 		}
 	}
 
-	for (int i = 0; i < possible.size(); i++) {
-		if (possible.at(i) == type) {
-			std::cout << POStoString(type) << endl;
-			return possible.at(i);
-		}
-	}
+	return possible.at(index);
 }

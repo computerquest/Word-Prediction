@@ -75,7 +75,6 @@ void dataCollectorTest() {
  	MasterResource master;
 
 	//cout << master.findNGramP("he").subject.name;
-	cout << master.findNGramP(trimWhite("sacrificed")).subject.name; //todo why you work???????
 
 	cout << master.findNGramP(Word("he")).subject.name;
 	//hidden layer numbers
@@ -93,7 +92,6 @@ void dataCollectorTest() {
 	DataCollector d("Sherlock.txt");
 	d.master = &master;
 	d.engine = &engine;
-	cout << master.findNGramP(trimWhite("sacrificed")).subject.name;
 	//d.read();
 	//d.dialogueFilter();
 	//d.breakExpos();
@@ -116,9 +114,8 @@ void dataCollectorTest() {
 
 int main()
 {
-	//dataCollectorTest();
-	MasterResource m;
-	m.readNGram();
+	dataCollectorTest();
+
 	cout << "end" << endl;
 	return 0;
 }

@@ -5,17 +5,12 @@ using namespace std;
 Phrase::Phrase() {
 	cout << "phrase created" << endl;
 }
-Phrase::Phrase(string phraseInput) {
-	phrase = phraseInput;
-
-	wordString = breakDownV(phraseInput);
-
-	for (int i = 0; i < wordString.size(); i++) {
-		wordsW.push_back(resource->findWord(wordString.at(i)));
-		wordPOS.push_back(wordsW.at(wordsW.size() - 1).type);
-	}
-
-	structure = resource->findStructurePercision(wordPOS);
+Phrase::Phrase(string phrase, vector<string> wordString, vector<POS> wordPOS, vector<Word> wordsW,SStructure structure) {
+	this->phrase = phrase;
+	this->wordString = wordString;
+	this->wordPOS = wordPOS;
+	this->wordsW = wordsW;
+	this->structure = structure;
 }
 
 bool Phrase::contains(Word word) {

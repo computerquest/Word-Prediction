@@ -17,8 +17,8 @@ class PredictionEngine;
 
 class MasterResource {
 public:
-	map<int, vector<NGram<Word>>> ngramML;
-	map<int, vector<NGram<SStructure>>> sNGramML;
+	map<int, vector<NGram<Word>>> ngramML; //word length, word
+	map<int, vector<NGram<SStructure>>> sNGramML; //structure length, structure
 	LinkedList<int, Word> probationWord;
 	LinkedList<int, SStructure> probationSS;
 	PredictionEngine* engine;
@@ -53,7 +53,11 @@ public:
 	vector<NGram<SStructure>*> findNGramSS(vector<POS> order);
 
 	NGram<Word> findNGram(Word word);
+	vector<NGram<Word>> findNGram(string word);
+	vector<NGram<Word>*> findNGramP(string word);
 	NGram<Word>& findNGramP(Word word);
+	Word findWordContext(Word last, string current);
+	NGram<Word> findWordContextNG(Word last, string current);
 
 	NGram<Word> findInFile(string search, int file);
 	string decypherType(string secondType);
@@ -73,10 +77,10 @@ public:
 
 	////////////////////////////////////////////////////////////////////////misc
 	void updateNGram(Word input, int newOccerence);
-	void findNew(string phrase);
+	//void findNew(string phrase); todo needs to be updated and put to use (if found worthy)
 	//Word findWord(string word, POS type);
 	//SStructure findStructure(vector<POS> components, int variation, POS alternate);
 	bool isDouble(string word);
 	vector<POS> doublePossibilities(string word);
-	POS findDouble(string phrase, string target);
+	Word findDouble(Word before, string target);
 };

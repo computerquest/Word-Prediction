@@ -13,6 +13,7 @@
 #include <fstream>
 using namespace std;
 
+//todo CHANGE TO INCLUDE ADVERB AND NEW WORD TYPES
 class PredictionEngine {
 public:
 	MLP nn;
@@ -22,8 +23,9 @@ public:
 	MasterResource master;
 	vector<POS> lastPhraseGlobal;
 
-	vector<POS> multipleMissing(string phrase);
-	vector<POS> multipleMissingTraining(string phrase);
+	//todo the commented out need to be updated and possibly put back to use
+	//vector<POS> multipleMissing(string phrase);
+	//vector<POS> multipleMissingTraining(string phrase);
 
 	void mergeTesting(string phrase);
 
@@ -34,7 +36,9 @@ public:
 
 	void createTraining();
 
-	POS findTypeDeployment(vector<POS> wtype, string phrase, int i);
+	POS findTypeDeployment(vector<Word> fullWord, vector<POS> wtype, string phrase, int i);
 
 	void filterExamples();
+
+	Word handleDouble(NGram<Word> last, vector<Word> possible);
 }; //class end 

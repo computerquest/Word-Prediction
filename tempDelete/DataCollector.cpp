@@ -70,11 +70,17 @@ void DataCollector::findData()
 			}
 		}*/
 
-		for (int b = 0; b < words.size(); b++) {
-			NGram<Word> word = master->findWord(trimWhite(words.at(b))); //todo shouldn't work
+		//todo add sentence starter ngram for this to try and determine first word type
+		vector<Word> wordList;
+		wordList.push_back(master->findWord(words.at(0)).at(0));
+		parts.push_back(wordList.at(wordList.size() - 1).type);
 
-			if (word.subject.name != "not found") {
-				parts.push_back(word.subject.type);
+		for (int b = 1; b < words.size(); b++) {
+			Word w = master->findDouble(wordList.at(wordList.size() - 1), trimWhite(words.at(b)));
+
+			if (w.name != "not found") {	
+				wordList.push_back(master->findDouble(wordList.at(wordList.size()-1), trimWhite(words.at(b))));
+				parts.push_back(w.type);
 			}
 			else {
 				break;
@@ -86,11 +92,11 @@ void DataCollector::findData()
 			newSS.addEnding(end);
 
 			engine->examples.push_back(expos.at(i));
-			master->sNGramML.push_back(newSS);
+			master->sNGramML[newSS.component.size()].push_back(newSS);
 		}
 		//need to get the gram to update the occerence
 		else if (master->sstructureExist(parts)) {
-			SStructure ss = master->findStructurePercisionP(parts);
+			SStructure ss = master->findStructurePercision(parts);
 			ss.addEnding(end);
 			for (int i = 0; i < duringPunc.size(); i++) {
 				ss.addPunctuation(duringPunc.at(i));
@@ -140,8 +146,10 @@ void DataCollector::findData()
 			}
 		}*/
 
-		for (int b = 0; b < words.size(); b++) {
-			NGram<Word> word = master->findWord(trimWhite(words.at(b))); //todo shouldn't work
+		Word temp("");
+		parts.push_back(master->findWordContext(temp, trimWhite(words.at(0))).type);
+		for (int b = 1; b < words.size(); b++) {
+			NGram<Word> word = master->findWordContext(words[i-1],trimWhite(words.at(b))); //todo shouldn't work
 
 			if (word.subject.name != "not found") {
 				parts.push_back(word.subject.type);
@@ -156,11 +164,11 @@ void DataCollector::findData()
 			newSS.addEnding(end);
 
 			engine->examples.push_back(dialogue.at(i));
-			master->sNGramML.push_back(newSS);
+			master->sNGramML[newSS.component.size()].push_back(newSS);
 		}
 		//need to get the gram to update the occerence
 		else if (master->sstructureExist(parts)) {
-			SStructure ss = master->findStructurePercisionP(parts);
+			SStructure ss = master->findStructurePercision(parts);
 			ss.addEnding(end);
 			for (int i = 0; i < duringPunc.size(); i++) {
 				ss.addPunctuation(duringPunc.at(i));

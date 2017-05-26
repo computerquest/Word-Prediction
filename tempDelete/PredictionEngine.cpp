@@ -36,9 +36,13 @@ void PredictionEngine::createTraining() {
 		vector<string> wordStrings = breakDownV(examples.at(i));
 		vector<POS> wtype;
 
-		for (int a = 0; a < wordStrings.size(); a++) {
-			cout << wordStrings.at(a) << endl;
-			wtype.push_back(master.findWord(wordStrings.at(a)).type);
+		//todo add sentence starter ngram for this to try and determine first word type
+		vector<Word> wordList;
+		wordList.push_back(master.findWord(wordStrings.at(0)).at(0));
+		wtype.push_back(wordList.at(wordList.size() - 1).type);
+		for (int b = 1; b < wordStrings.size(); b++) {
+			Word w = master.findDouble(wordList.at(wordList.size() - 1), trimWhite(wordStrings.at(b)));
+			wtype.push_back(w.type);
 		}
 
 		for (int b = 0; b < wordStrings.size(); b++) {
@@ -67,7 +71,7 @@ void PredictionEngine::createTraining() {
 				desired.push_back(1);
 			}
 
-			findTypeDeployment(newWType, examples.at(i), b);
+			findTypeDeployment(wordList, newWType, examples.at(i), b);
 			training.add(nn.currentInput, desired);
 		}
 	}
@@ -76,7 +80,7 @@ void PredictionEngine::createTraining() {
 }
 
 //31 32 33
-POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int targetWordIndex) {
+POS PredictionEngine::findTypeDeployment(vector<Word> fullWordList, vector<POS> wtype, string phrase, int targetWordIndex) {
 	vector<string> wordStrings = breakDownV(phrase);
 	LinkedList<POS, int> typeBlocks = posToBlocks(wordStrings, wtype);
 	POS lastPOS = POS::Unknown;
@@ -226,27 +230,29 @@ POS PredictionEngine::findTypeDeployment(vector<POS> wtype, string phrase, int t
 		}
 
 		//CHECK FIND NGRAM
-		Word w = master.findWord(wordStrings.at(targetWordIndex - 1));
-		NGram<Word> lastWordNGram = master.findNGram(w);//
-		LinkedList<int, Word> usedWords = lastWordNGram.content;
+		NGram<Word> lastWordNGram = master.findNGram(fullWordList.at(targetWordIndex-1));//
+		map<int, vector<Word>> usedWords = lastWordNGram.content;
 
 		double usedNouns = 0;
 		double usedVerbs = 0;
 		double usedAdjectives = 0;
 		double total = 0;
-		for (int i = 0; i < usedWords.size(); i++) {
-			POS type = usedWords.getValueI(i).type;
-			if (type == POS::Noun) {
-				usedNouns++;
-			}
-			else if (type == POS::Verb) {
-				usedVerbs++;
-			}
-			else if (type == POS::Adjective) {
-				usedAdjectives++;
-			}
-			else {
-				total++;
+		for (auto it : usedWords) {
+			vector<Word>& wordPos = it.second;
+
+			for (int i = 0; i < wordPos.size(); i++) {
+				if (type == POS::Noun) {
+					usedNouns+= it.first;
+				}
+				else if (type == POS::Verb) {
+					usedVerbs += it.first;
+				}
+				else if (type == POS::Adjective) {
+					usedAdjectives += it.first;
+				}
+				else {
+					total += it.first;
+				}
 			}
 		}
 
@@ -513,6 +519,14 @@ void PredictionEngine::filterExamples() {
 	saveTraining();
 }
 
+Word PredictionEngine::handleDouble(NGram<Word> last, vector<Word> possible)
+{
+	
+	return Word();
+}
+
+//todo update
+/*
 vector<POS> PredictionEngine::multipleMissing(string phrase) {
 	vector<string> wordStrings = breakDownV(phrase);
 	vector<POS> wordTypes;
@@ -612,15 +626,20 @@ vector<POS> PredictionEngine::multipleMissingTraining(string phrase) {
 	}
 
 	return newPOS;
-}
+}*/
 
 void PredictionEngine::mergeTesting(string phrase) {
 	cout << "Phrase: " << phrase << endl;
 	vector<string> wordStrings = breakDownV(phrase);
 	vector<POS> wtype;
 
-	for (int i = 0; i < wordStrings.size(); i++) {
-		wtype.push_back(master.findWord(wordStrings.at(i)).type);
+	// todo add sentence starter ngram for this to try and determine first word type
+		vector<Word> wordList;
+	wordList.push_back(master.findWord(wordStrings.at(0)).at(0));
+	wtype.push_back(wordList.at(wordList.size() - 1).type);
+	for (int b = 1; b < wordStrings.size(); b++) {
+		Word w = master.findDouble(wordList.at(wordList.size() - 1), trimWhite(wordStrings.at(b)));
+		wtype.push_back(w.type);
 	}
 
 	for (int i = 0; i < wordStrings.size(); i++) {
@@ -628,7 +647,7 @@ void PredictionEngine::mergeTesting(string phrase) {
 			continue;
 		}
 
-		findTypeDeployment(wtype, phrase, i);
+		findTypeDeployment(wordList, wtype, phrase, i);
 
 		double one = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(0).value;
 		double two = nn.neuralNetwork.at(nn.neuralNetwork.size() - 1).at(1).value;
@@ -649,3 +668,4 @@ void PredictionEngine::mergeTesting(string phrase) {
 		cout << wordStrings.at(i) << ": " << POStoString(type) << " Actual: " << POStoString(wtype.at(i)) << endl;
 	}
 }
+

@@ -17,10 +17,9 @@ public:
 	vector<Word> wordsW;
 	vector<POS> wordPOS;
 	vector<string> wordString;
-	MasterResource* resource;
 
 	Phrase();
-	Phrase(string phraseInput);
+	Phrase(string phrase, vector<string> wordString, vector<POS> wordPOS, vector<Word> wordsW, SStructure structure);
 
 	bool contains(Word word);
 	bool contains(string word);
