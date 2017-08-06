@@ -1,6 +1,7 @@
 #include "MasterResource.h"
 #include "PredictionEngine.h"
 using namespace std;
+
 //todo make sure can return doubles based on string
 //todo upgrade file system?
 //todo UNDO CHANGES
@@ -15,7 +16,7 @@ MasterResource::MasterResource() {
 ///////////////////////////////////////////////////////////////////////////FILE
 vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> delimeter) {
 	ifstream stream;
-	stream.open(fileName);
+	stream.open("C:/Workspace/New folder/tempDelete/tempDelete/"+fileName);
 
 	vector<vector<string>> answer;
 
@@ -45,7 +46,7 @@ vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> d
 }
 vector<vector<string>> MasterResource::fileInput(string fileName, vector<char> delimeter, char stopChar) {
 	ifstream stream;
-	stream.open(fileName);
+	stream.open("C:/Workspace/New folder/tempDelete/tempDelete/"+fileName);
 
 	vector<vector<string>> answer;
 
@@ -305,10 +306,11 @@ void MasterResource::readNGram() {
 	}*/
 }
 
-NGram<Word> MasterResource::findInFile(string search, int file) {
+vector<NGram<Word>> MasterResource::findInFile(string search, int file) {
 	vector<char> delimeter;
 	delimeter.push_back('|');
 	vector<vector<string>> input = fileInput(to_string(file) + ".txt", delimeter);
+	vector<NGram<Word>> answer;
 
 	for (int i = 0; i < input.size(); i++) {
 		if (input.at(i).at(0) == search) {
@@ -324,7 +326,8 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 				for (int b = 0; b < secondaryVector.size(); b++) {
 					Word secondaryTempWord(secondaryVector.at(1), toType(secondaryVector.at(2)));
 
-					newNGram.updateSafe(secondaryTempWord, stoi(secondaryVector.at(0)));
+					//newNGram.updateSafe(secondaryTempWord, stoi(secondaryVector.at(0)));
+					newNGram.addItem(secondaryTempWord, stoi(secondaryVector.at(0)));
 				}
 			}
 
@@ -338,14 +341,18 @@ NGram<Word> MasterResource::findInFile(string search, int file) {
 				ngramML[file] = temp;
 			}
 
-			return newNGram;
+			answer.push_back(newNGram);
+		}
+		else if (answer.size() > 0 && input.at(i).at(0) != search) {
+			return answer;
 		}
 	}
 
 	NGram<Word> defaultNG;
 	Word defaultWord("not found", POS::Unknown);
 	defaultNG.subject = defaultWord;
-	return defaultNG;
+	answer.push_back(defaultNG);
+	return answer;
 }
 string MasterResource::decypherType(string secondType) {
 	if (secondType == "appge" || secondType.find("db") != string::npos || secondType.find("dd") != string::npos || secondType == "ex" || secondType.find("nn") || secondType.find("np") != string::npos || secondType.find("np") != string::npos || secondType.find("pn") != string::npos || secondType.find("pp") != string::npos || secondType == "zz2") {
@@ -449,7 +456,7 @@ void MasterResource::readProbationSS() {
 	}
 }
 
-bool MasterResource::wordExistAll(string word) {
+/*bool MasterResource::wordExistAll(string word) {
 	if (!wordExist(word)) {
 		int value = 0;
 		for (int i = 0; i < word.length(); i++) {
@@ -460,7 +467,7 @@ bool MasterResource::wordExistAll(string word) {
 	}
 
 	return wordExist(word);
-}
+}*/
 ////////////////////////////////////////////////////////////////////////////////FIND
 
 //INCOMPLETE
@@ -482,25 +489,13 @@ vector<POS> MasterResource::findAllWordType(string input) {
 
 	return answer;
 }
+
 vector<Word> MasterResource::findWord(string word)
 {
 	vector<Word> answer;
-
-	int wordSum = stringToInt(word);
-
-	map<int, vector<NGram<Word>>>::iterator it;
-	if ((it = ngramML.find(wordSum)) != ngramML.end()) {
-		vector<NGram<Word>>& words = it->second;
-		for (int i = 0; i < words.size(); i++) {
-			while (words[i].subject.name == word) {
-				answer.push_back(words[i].subject);
-				i++;
-			}
-
-			if (answer.size() > 0) {
-				return answer;
-			}
-		}
+	vector<NGram<Word>*> possible = findNGramP(word);
+	for (int i = 0; i < possible.size(); i++) {
+		answer.push_back(possible.at(i)->subject);
 	}
 
 	return answer;
@@ -666,11 +661,24 @@ vector<NGram<Word>*> MasterResource::findNGramP(string word)
 				ans.push_back(&ngrams[i]);
 			}
 		}
-	}
-	else {
-		NGram<Word> a = findInFile(word, value);
 
-		if (a.subject.name != "not found") {
+		if (ans.size() == 0) {
+			vector<NGram<Word>> a = findInFile(word, value);
+
+			if (a[0].subject.name != "not found") {
+				vector<NGram<Word>>& ngrams = ngramML.find(value)->second;
+				for (int i = 0; i < ngrams.size(); i++) {
+					if (ngrams[i].subject == word) {
+						ans.push_back(&ngrams[i]);
+					}
+				}
+			}
+		}
+	}
+	else { //todo redo this so that we get direct pointer from findInFile
+		vector<NGram<Word>> a = findInFile(word, value);
+
+		if (a[0].subject.name != "not found") {
 			vector<NGram<Word>>& ngrams = ngramML.find(value)->second;
 			for (int i = 0; i < ngrams.size(); i++) {
 				if (ngrams[i].subject == word) {
@@ -696,9 +704,9 @@ NGram<Word>& MasterResource::findNGramP(Word word) {
 		}
 	}
 	else {
-		NGram<Word> a = findInFile(word.name, value);
+		vector<NGram<Word>> a = findInFile(word.name, value);
 
-		if (a.subject.name != "not found") {
+		if (a[0].subject.name != "not found") {
 			vector<NGram<Word>>& ngrams = ngramML.find(value)->second;
 			for (int i = 0; i < ngrams.size(); i++) {
 				if (ngrams[i].subject == word) {
@@ -901,6 +909,10 @@ vector<POS> MasterResource::doublePossibilities(string word) {
 
 	return answer;
 }
+
+//todo make this way more efficient 
+//right now it is searching the ngrams the number of possibiliites
+//should change data structure to word value, (word, occurence) and then sort that by number of occerences
 Word MasterResource::findDouble(Word before, string target) {
 	if (before.name == "not found") {
 		vector<Word> possible = findWord(target);
@@ -920,6 +932,11 @@ Word MasterResource::findDouble(Word before, string target) {
 			greatest = a;
 			index = i;
 		}
+	}
+
+	if (possible.size() == 0) {
+		Word stand("not found", Unknown);
+		return stand;
 	}
 
 	return possible.at(index);

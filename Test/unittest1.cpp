@@ -1,22 +1,51 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-
+#include <string>
+#include "../tempDelete/MasterResource.h"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 		
-	TEST_CLASS(MasterResource)
+	TEST_CLASS(MasterResourceTest)
 	{
 	public:
-		
-		//https://blogs.msdn.microsoft.com/jsocha/2010/11/19/writing-unit-tests-in-visual-studio-for-native-c/
-		TEST_METHOD(findWord)
+		TEST_METHOD(findWordTest)
 		{
-			Assert::AreEqual(1, 1);
-			// TODO: Your test code here
-		}
-		TEST_METHOD(findNGram)
-		{
-			Assert::AreEqual(0, 1);
-			// TODO: Your test code here
+			MasterResource master;
+			
+			string name = ((master.findWord("he")).at(0)).name;
+			
+			if (name == "he") {
+				Assert::IsTrue(true);
+			}
+			else {
+				Assert::IsFalse(false);
+			}
 		}
 
+		TEST_METHOD(findNGramPTest)
+		{
+			MasterResource master;
+
+			string name = ((master.findNGramP("he")).at(0))->subject.name;
+
+			if (name == "he") {
+				Assert::IsTrue(true);
+			}
+			else {
+				Assert::IsFalse(false);
+			}
+		}
+
+		TEST_METHOD(findDoubleTest)
+		{
+			MasterResource master;
+
+			string name = master.findDouble(master.findWord("he").at(0), "said").name;
+
+			if (name == "he") {
+				Assert::IsTrue(true);
+			}
+			else {
+				Assert::IsFalse(false);
+			}
+		}
 	};

@@ -114,8 +114,8 @@ void dataCollectorTest() {
 
 int main()
 {
-	dataCollectorTest();
-
+	//dataCollectorTest();
+	defaultTest();
 	cout << "end" << endl;
 	return 0;
 }

@@ -32,6 +32,10 @@ public:
 		content[1].push_back(item);
 	}
 
+	void addItem(T item, int startAmount) {
+		content[startAmount].push_back(item);
+	}
+
 	int updateItem(T item, int adjust) {
 		int val = -1;
 		for (auto& it : content) {

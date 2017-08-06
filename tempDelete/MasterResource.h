@@ -12,9 +12,8 @@
 #include <fstream>
 #include <map>
 using namespace std;
-//
+//stufffffff
 class PredictionEngine;
-
 class MasterResource {
 public:
 	map<int, vector<NGram<Word>>> ngramML; //word length, word
@@ -59,13 +58,13 @@ public:
 	Word findWordContext(Word last, string current);
 	NGram<Word> findWordContextNG(Word last, string current);
 
-	NGram<Word> findInFile(string search, int file);
+	vector<NGram<Word>> findInFile(string search, int file);
 	string decypherType(string secondType);
 
 	////////////////////////////////////////////////////////////////exist
 	bool sstructureExist(vector<POS> order);
 
-	bool wordExistAll(string word);
+	//bool wordExistAll(string word);
 
 	bool probationExistWord(string word);
 	bool probationExistSS(vector<POS> input);

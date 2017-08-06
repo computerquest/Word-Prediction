@@ -160,6 +160,7 @@
     <ClInclude Include="PredictionEngine.h" />
     <ClInclude Include="Punctuation.h" />
     <ClInclude Include="RBM.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SStructure.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -191,6 +192,9 @@
     <ClCompile Include="tempDelete.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Word.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="tempDelete.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

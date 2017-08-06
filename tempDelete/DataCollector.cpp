@@ -38,6 +38,10 @@ void DataCollector::findData()
 		Punctuation end = stringToPunctuation(trimWhite(words.at(words.size() - 1)));
 		words.erase(words.begin() + words.size() - 1);
 
+		if (words.size() == 0) {
+			continue; 
+		}
+
 		if (end == COMMA) {
 			continue;
 		}
@@ -50,6 +54,12 @@ void DataCollector::findData()
 			}
 		}
 
+		//todo fix this is super lazy
+		for (int i = 0; i < words.size(); i++) {
+			string w = trimWhite(words[i]);
+			std::transform(w.begin(), w.end(), w.begin(), ::tolower);
+			words[i] = w;
+		}
 
 		/*NGram<Word>* lastNG = nullptr;
 		for (int b = 0; b < words.size(); b++) {
@@ -72,14 +82,23 @@ void DataCollector::findData()
 
 		//todo add sentence starter ngram for this to try and determine first word type
 		vector<Word> wordList;
-		wordList.push_back(master->findWord(words.at(0)).at(0));
-		parts.push_back(wordList.at(wordList.size() - 1).type);
+			
+		{
+			vector<Word> temp = master->findWord(words.at(0));
 
+			if (temp.size() > 0) {
+				wordList.push_back(temp.at(0));
+				parts.push_back(wordList.at(wordList.size() - 1).type);
+			}
+			else {
+				continue;
+			}
+		}
 		for (int b = 1; b < words.size(); b++) {
-			Word w = master->findDouble(wordList.at(wordList.size() - 1), trimWhite(words.at(b)));
+			Word w = master->findDouble(wordList.at(wordList.size() - 1), words.at(b));
 
 			if (w.name != "not found") {	
-				wordList.push_back(master->findDouble(wordList.at(wordList.size()-1), trimWhite(words.at(b))));
+				wordList.push_back(master->findDouble(wordList.at(wordList.size()-1), words.at(b)));
 				parts.push_back(w.type);
 			}
 			else {
@@ -127,6 +146,11 @@ void DataCollector::findData()
 			}
 		}
 
+		//todo fix this is super lazy
+		for (int i = 0; i < words.size(); i++) {
+			words[i] = trimWhite(words[i]);
+		}
+
 		/*NGram<Word>* lastNG = nullptr;
 		for (int b = 0; b < words.size(); b++) {
 			NGram<Word>& word = master->findNGramP(trimWhite(words.at(b))); //todo shouldn't work
@@ -146,13 +170,26 @@ void DataCollector::findData()
 			}
 		}*/
 
-		Word temp("");
-		parts.push_back(master->findWordContext(temp, trimWhite(words.at(0))).type);
-		for (int b = 1; b < words.size(); b++) {
-			NGram<Word> word = master->findWordContext(words[i-1],trimWhite(words.at(b))); //todo shouldn't work
+		//todo add sentence starter ngram for this to try and determine first word type
+		vector<Word> wordList;
 
-			if (word.subject.name != "not found") {
-				parts.push_back(word.subject.type);
+		{
+			vector<Word> temp = master->findWord(words.at(0));
+
+			if (temp.size() > 0) {
+				wordList.push_back(temp.at(0));
+				parts.push_back(wordList.at(wordList.size() - 1).type);
+			}
+			else {
+				continue;
+			}
+		}
+		for (int b = 1; b < words.size(); b++) {
+			Word w = master->findDouble(wordList.at(wordList.size() - 1), trimWhite(words.at(b)));
+
+			if (w.name != "not found") {
+				wordList.push_back(master->findDouble(wordList.at(wordList.size() - 1), trimWhite(words.at(b))));
+				parts.push_back(w.type);
 			}
 			else {
 				break;

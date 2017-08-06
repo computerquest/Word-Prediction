@@ -87,16 +87,17 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
+      <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>tempDelete.lib;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,10 +151,45 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\tempDelete\BreakDown.h" />
+    <ClInclude Include="..\tempDelete\Connection.h" />
+    <ClInclude Include="..\tempDelete\DataCollector.h" />
+    <ClInclude Include="..\tempDelete\FileManager.h" />
+    <ClInclude Include="..\tempDelete\LinkedList.h" />
+    <ClInclude Include="..\tempDelete\MasterResource.h" />
+    <ClInclude Include="..\tempDelete\MLP.h" />
+    <ClInclude Include="..\tempDelete\NeuralNetwork.h" />
+    <ClInclude Include="..\tempDelete\Neuron.h" />
+    <ClInclude Include="..\tempDelete\NGram.h" />
+    <ClInclude Include="..\tempDelete\Phrase.h" />
+    <ClInclude Include="..\tempDelete\POS.h" />
+    <ClInclude Include="..\tempDelete\PredictionEngine.h" />
+    <ClInclude Include="..\tempDelete\Punctuation.h" />
+    <ClInclude Include="..\tempDelete\RBM.h" />
+    <ClInclude Include="..\tempDelete\SStructure.h" />
+    <ClInclude Include="..\tempDelete\Text.h" />
+    <ClInclude Include="..\tempDelete\vectorContains.h" />
+    <ClInclude Include="..\tempDelete\Word.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\tempDelete\BreakDownV.cpp" />
+    <ClCompile Include="..\tempDelete\Connection.cpp" />
+    <ClCompile Include="..\tempDelete\DataCollector.cpp" />
+    <ClCompile Include="..\tempDelete\FileManager.cpp" />
+    <ClCompile Include="..\tempDelete\MasterResource.cpp" />
+    <ClCompile Include="..\tempDelete\MLP.cpp" />
+    <ClCompile Include="..\tempDelete\NeuralNetwork.cpp" />
+    <ClCompile Include="..\tempDelete\Neuron.cpp" />
+    <ClCompile Include="..\tempDelete\Phrase.cpp" />
+    <ClCompile Include="..\tempDelete\POS.cpp" />
+    <ClCompile Include="..\tempDelete\PredictionEngine.cpp" />
+    <ClCompile Include="..\tempDelete\Punctuation.cpp" />
+    <ClCompile Include="..\tempDelete\RBM.cpp" />
+    <ClCompile Include="..\tempDelete\SStructure.cpp" />
+    <ClCompile Include="..\tempDelete\Text.cpp" />
+    <ClCompile Include="..\tempDelete\Word.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -161,7 +197,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="unittest1.cpp" />
-    <ClCompile Include="unittest2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\tempDelete\tempDelete.vcxproj">
+      <Project>{36b2c4d2-7198-4b46-9b9f-f0b3cbeb027c}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\tempDelete\NGrams.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
