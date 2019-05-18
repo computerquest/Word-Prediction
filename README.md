@@ -1,0 +1,3 @@
+# word-prediction
+
+This was my first major project. I wanted to create a word prection program like the one on your phone and I started with developing the base technology in c++. I incorperated NGrams, Neural Networks, and my unresearched views on lingustics. I wrote all of my own code for NGrams and Neural Networks which worked. I had also started creating systems for detecting and learning new words. I parsed the text for input using my uniformed lingustic views which worked in a limitted capacity. I got as far as training a network to learn part of speech when I realized that my mistakes in liguistics required a very substantial rewrite, so I ended the project. 
